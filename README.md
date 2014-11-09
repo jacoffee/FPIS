@@ -1,4 +1,4 @@
 FPIS
 ====
 
-Practice Program For Functional Programming in Scala
+Practice Project For Functional Programming in Scala
