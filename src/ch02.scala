@@ -1,6 +1,7 @@
 /**
  * Created by allen on 14-11-13.
  */
-class ch02 {
+object ch02 extends App {
+
 
 }
