@@ -1,5 +1,3 @@
-package ch02
-
 import scala.annotation.tailrec
 /**
  * Created by allen on 14-11-13.
@@ -52,7 +50,7 @@ object Excercise1 extends App {
 
 	// compare efficiency
 	val start  = System.currentTimeMillis
-	val r1 = tailRecursion(1000)
+	val r1 = iteration(1000)
 	println(" time consuming " + (System.currentTimeMillis -start))
 	println(" result " + r1)
 	//Integer.MAX_VALUE
