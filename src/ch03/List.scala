@@ -1,5 +1,7 @@
 package ch03
 
+import scala.annotation.tailrec
+
 /**
  * Created by allen on 14-11-30.
  */
@@ -24,4 +26,21 @@ object List {
 		else Cons(as.head, apply(as.tail: _*))
 
 	// Excersie2 Implement the function for "removing" the first element of a List  what if the List is Empty
+	def tail[A](as: List[A]) = {
+		as match {
+			case Nil =>Nil
+			case Cons(head, other) => other
+		}
+	}
+
+	def isEmpty[A](as: List[A]) = as == Nil
+	// EXERCISE 3: Generalize to the function drop, which removes the first  n elements from a list.
+	def drop[A](as: List[A], n: Int) = {
+		@tailrec def go(as: List[A], n: Int): List[A] = {
+			if (isEmpty(as)) Nil
+			else if (n == 0) as
+			else go(tail(as), n-1)
+		}
+		go(as, n)
+	}
 }
