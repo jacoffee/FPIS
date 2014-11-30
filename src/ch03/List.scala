@@ -43,4 +43,11 @@ object List {
 		}
 		go(as, n)
 	}
+
+	/*
+		EXERCISE 4: Implement dropWhile, which removes elements from the10
+		List prefix as long as they match a predicate. Again, notice these functions take
+		time proportional only to the number of elements being dropped—we do not need
+		to make a copy of the entire .List
+	*/
 }
