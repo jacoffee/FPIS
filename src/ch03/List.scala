@@ -11,6 +11,17 @@ case object Nil extends List[Nothing]
 case class Cons[+A](head: A, tail: List[A]) extends List[A]
 
 object List {
+	def size[A](as: List[A]) = {
+		var count = 0
+		var these = as
+		while (!isEmpty(these)) {
+			count = count + 1
+			these = tail(these)
+		}
+		count
+	}
+
+	/* simple and rough implementation of sum and product */
 	def sum(ins: List[Int]): Int = ins match {
 		case Nil => 0
 		case Cons(head, tail) => head  + sum(tail)
@@ -19,8 +30,33 @@ object List {
 	def product(ds: List[Double]): Double = ds match {
 		case Nil => 1.0
 		case Cons(0.0, _) => 0.0
-		case Cons(x, xs) => x * product(xs)
+		case Cons(head, tail) => head * product(tail)
 	}
+
+	/* high-order implementation */
+	/*
+		Recursion over lists and generalizing to higher-order functions
+		problem: 0 || 1.0,  + || *
+		solution:
+			Whenever you encounter duplication like this, as we've discussed before,
+			you can generalize it away by pulling subexpressions out into function arguments
+			任何时候，你碰到了这样的重复。你可以把子表达式抽到一个函数中并且将它们当作函数参数
+			head  sum =>  f: (A, B) => B
+	*/
+	def foldRight[A, B](as: List[A], z: B)(f: (A, B) => B): B = {
+		as match {
+			case Nil => z
+			case Cons(head, tail) => f(head, foldRight(tail, z)(f)) // 1 :: Nil -> f(1, foldRight(Nil, 0)f)
+		}
+	}
+
+	def newSum(as: List[Int]) = foldRight(as, 0)(_ + _)
+	def newProduct(ds: List[Double]) = foldRight(ds, 1.0)(_ + _)
+	// Invocation Trace
+	/*
+		foldRight(Cons(1, Cons(2, Cons(3, Nil))), 0)(_ + _)
+		f(1, foldRight(Cons(2, Cons(3, Nil)), 0)(_ + _)
+	*/
 
 	def apply[A](as: A*): List[A] =
 		if (as.isEmpty) Nil
@@ -80,5 +116,32 @@ object List {
 		else Cons(anotherHead, tail(as))
 	}
 
+	/*
+		EXERCISE 8: See what happens when you pass Nil and Cons themselves to foldRight , like this: foldRight(List(1,2,3), Nil:List[Int])(Cons(_,_)) .
+		What do you think this says about the relationship between foldRight and the data constructors of List ?
+		1 :: 2:: 3 :: Nil
+		equals to apply method
+	*/
+
+	/* EXERCISE 9: Compute the length of a list using foldRight. */
+	def length[A](l: List[A]): Int = {
+		l match {
+			case Nil => 0
+			case _ => foldRight(l, 0){ (_, acc) => acc + 1 }
+		}
+	}
+
+	/* EXERCISE 10: foldRight is not tail-recursive and will StackOverflow for large lists. Use foldLeft instead */
+	def foldLeft[A,B](l: List[A], z: B)(f: (B, A) => B): B = {
+		l match {
+			case Nil => z // f(z, head)
+			case Cons(head, tail) => foldLeft(tail, f(z, head))(f)
+			 // cause writing in this way, the f will be invoked in the last invocation
+			// but  tail has reduced the List to One
+			// Cons(1, Cons(2, Cons(3, Nil)))
+			// foldLeft(Cons(2, Cons(3, Nil)), 0)(_+ _)
+			// foldLeft(Cons(3, Nil), 0)(_+ _)
+		}
+	}
 
 }
