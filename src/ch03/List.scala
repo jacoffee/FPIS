@@ -66,11 +66,19 @@ object List {
 	}
 
 	// def dropWhile[A](as:List[A], p: A => Boolean): List[A] = {
-	// writint with the upper can not usher Type reference
+	// writint with the upper can not utilize Type reference
 	//dropWhile(List(1 ,2 , 4, 5, 6), (x: Int) => x > 3)
 	/*
 		The main reason  for grouping the arguments this way is to assist with type inference. If
 		we do this, Scala can determine the type of without any annotation, based on what it knows about the type of the , which makes theList
 	*/
 	dropWhile(List(1 ,2 , 4, 5, 6))(x => x > 3)
+
+	/* EXERCISE 5: Using the same idea,  implement the function for setHead replacing the first element of a with a different value */
+	def setHead[A](as: List[A], anotherHead: A): List[A] = {
+		if (isEmpty(as)) as
+		else Cons(anotherHead, tail(as))
+	}
+
+
 }
