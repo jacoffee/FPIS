@@ -124,12 +124,7 @@ object List {
 	*/
 
 	/* EXERCISE 9: Compute the length of a list using foldRight. */
-	def length[A](l: List[A]): Int = {
-		l match {
-			case Nil => 0
-			case _ => foldRight(l, 0){ (_, acc) => acc + 1 }
-		}
-	}
+	def length[A](l: List[A]): Int = foldRight(l, 0){ (_, acc) => acc + 1 }
 
 	/* EXERCISE 10: foldRight is not tail-recursive and will StackOverflow for large lists. Use foldLeft instead */
 	def foldLeft[A,B](l: List[A], z: B)(f: (B, A) => B): B = {
@@ -144,4 +139,7 @@ object List {
 		}
 	}
 
+	// EXERCISE 11: Write sum, product  and a function to compute the length of  a list using foldLeft
+	def sum2(ins: List[Int]): Int = foldLeft(ins, 0)(_ + _)
+	def product2(ins: List[Int]): Int = foldLeft(ins, 1)(_ * _)
 }

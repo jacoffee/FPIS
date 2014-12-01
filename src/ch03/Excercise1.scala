@@ -4,7 +4,7 @@ package ch03
  * Created by allen on 14-11-30.
  */
 object Excercise1 extends App {
-	import ch03.List.{ sum, tail, drop, isEmpty, apply, length, foldRight }
+	import ch03.List.{ sum, tail, drop, isEmpty, apply, length, foldRight, sum2, product2  }
 	val x = List(1,2,3,4,5) match {
 		case Cons(x, Cons(2, Cons(4, _))) => x
 		case Nil => 42
@@ -19,4 +19,6 @@ object Excercise1 extends App {
 	println(drop(Nil, 3))
 	println(length(sampleList))
 	//val stackOverflow = foldRight(apply((1 to 2000000).toList: _*), 0L)(_ + _) // Exception in thread "main" java.lang.StackOverflowError
+	println(sum2(sampleList))
+	println(product2(sampleList))
 }
