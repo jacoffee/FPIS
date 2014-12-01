@@ -1,6 +1,7 @@
 package ch03
 
 import scala.annotation.tailrec
+import scala.collection.immutable.List
 
 /**
  * Created by allen on 14-11-30.
@@ -28,8 +29,15 @@ object List {
 	// Excersie2 Implement the function for "removing" the first element of a List  what if the List is Empty
 	def tail[A](as: List[A]) = {
 		as match {
-			case Nil =>Nil
+			case Nil =>throw new NoSuchElementException("tail of empty list")
 			case Cons(head, other) => other
+		}
+	}
+
+	def head[A](as: List[A]) = {
+		as match {
+			case Nil => throw new NoSuchElementException("head of empty list")
+			case Cons(head, other) => head
 		}
 	}
 
@@ -45,9 +53,24 @@ object List {
 	}
 
 	/*
-		EXERCISE 4: Implement dropWhile, which removes elements from the10
-		List prefix as long as they match a predicate. Again, notice these functions take
+		EXERCISE 4: Implement dropWhile, which removes elements from the List prefix as long as they match a predicate. Again, notice these functions take
 		time proportional only to the number of elements being dropped—we do not need
 		to make a copy of the entire .List
 	*/
+	def dropWhile[A](as:List[A])(p: A => Boolean): List[A] = {
+		@tailrec def loop(as: List[A]): List[A] = {
+			if (isEmpty(as) || !p(head(as))) as
+			else loop(tail(as))
+		}
+		loop(as)
+	}
+
+	// def dropWhile[A](as:List[A], p: A => Boolean): List[A] = {
+	// writint with the upper can not usher Type reference
+	//dropWhile(List(1 ,2 , 4, 5, 6), (x: Int) => x > 3)
+	/*
+		The main reason  for grouping the arguments this way is to assist with type inference. If
+		we do this, Scala can determine the type of without any annotation, based on what it knows about the type of the , which makes theList
+	*/
+	dropWhile(List(1 ,2 , 4, 5, 6))(x => x > 3)
 }
