@@ -1,7 +1,6 @@
 package ch03
 
 import scala.annotation.tailrec
-import scala.collection.immutable.List
 
 /**
  * Created by allen on 14-11-30.
@@ -142,4 +141,13 @@ object List {
 	// EXERCISE 11: Write sum, product  and a function to compute the length of  a list using foldLeft
 	def sum2(ins: List[Int]): Int = foldLeft(ins, 0)(_ + _)
 	def product2(ins: List[Int]): Int = foldLeft(ins, 1)(_ * _)
+
+	def length2[A](ins: List[A]): Int = foldLeft(ins, 0)((acc, _) => acc +1)
+
+	// EXERCISE 12: Write a function that returns the reverse of a list. See if you can write it using a fold
+	// Cons(1, Cons(2, Cons(3, Nil)))
+	def reverse[A](ins: List[A]): List[A] = foldLeft(ins, Nil: List[A])((B ,A) => Cons(A, B))
+
+	// EXERCISE 14: Implement append in terms of either foldLeft or foldRight
+	def append[A](ins: List[A], a: A) = ""
 }
