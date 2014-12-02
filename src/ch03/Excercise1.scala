@@ -6,7 +6,7 @@ import scala.annotation.tailrec
  * Created by allen on 14-11-30.
  */
 object Excercise1 extends App {
-	import ch03.List.{ sum, tail, drop, isEmpty, apply, length, foldRight, sum2, product2, length2 , reverse, append, append1, foldLeft, foldLeft1, flatten }
+	import ch03.List.{ sum, tail, drop, isEmpty, apply, length, foldRight, sum2, product2, length2 , reverse, append, append1, foldLeft, foldLeft1, flatten, map }
 	val x = List(1,2,3,4,5) match {
 		case Cons(x, Cons(2, Cons(4, _))) => x
 		case Nil => 42
@@ -35,4 +35,7 @@ object Excercise1 extends App {
 	println(foldLeft1(sampleList, 100)(_ - _))
 	// println(" go 的返回值 " + go(sampleList, sampleList1))
 	println(flatten(concatedList))
+	println(" map +1" + map(sampleList)(_ + 1))
+	val doubleList = apply(1.0, 2.0, 3.0, 4.0)
+	println(" map double to String" + map(sampleList)(_ .toString))
 }

@@ -173,4 +173,15 @@ object List {
 			case _ => Nil
 		}
 	}
+
+	// EXERCISE 16: Write a function that transforms a list of integers by adding 1 to each element.
+	// (Reminder: this should be a pure function that returns a new List!)
+	def map[A,B](l: List[A])(f: A => B): List[B] = {
+		val cc = (a:A, b: B) => Cons(f(a), Nil)
+		// def foldRight[A, B](as: List[A], z: B)(f: (A, B) => B): B = {
+		foldRight(List(1,2,3), Nil:List[Int])(Cons(_,_))
+		// foldRight(l, Nil:List[B])((h,t) => Cons(f(h),t))
+		foldRight(l, Nil:List[B]) { (each, acc) => Cons(f(each), acc) } // currying will do automatic type inference, so the each, acc type will be automatically infered
+	}
+
 }
