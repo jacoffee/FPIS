@@ -8,6 +8,7 @@ import scala.annotation.tailrec
 sealed trait List[+A]
 case object Nil extends List[Nothing]
 case class Cons[+A](head: A, tail: List[A]) extends List[A]
+// case class ::[+A](head: A, tail: List[A]) extends List[A]
 
 object List {
 	def size[A](as: List[A]) = {
@@ -46,6 +47,19 @@ object List {
 		as match {
 			case Nil => z
 			case Cons(head, tail) => f(head, foldRight(tail, z)(f)) // 1 :: Nil -> f(1, foldRight(Nil, 0)f)
+		}
+	}
+
+	/* EXERCISE 10: foldRight is not tail-recursive and will StackOverflow for large lists. Use foldLeft instead */
+	def foldLeft[A,B](l: List[A], z: B)(f: (B, A) => B): B = {
+		l match {
+			case Nil => z // f(z, head)
+			case Cons(head, tail) => foldLeft(tail, f(z, head))(f)
+			// cause writing in this way, the f will be invoked in the last invocation
+			// but  tail has reduced the List to One
+			// Cons(1, Cons(2, Cons(3, Nil)))
+			// foldLeft(Cons(2, Cons(3, Nil)), 0)(_+ _)
+			// foldLeft(Cons(3, Nil), 0)(_+ _)
 		}
 	}
 
@@ -125,19 +139,6 @@ object List {
 	/* EXERCISE 9: Compute the length of a list using foldRight. */
 	def length[A](l: List[A]): Int = foldRight(l, 0){ (_, acc) => acc + 1 }
 
-	/* EXERCISE 10: foldRight is not tail-recursive and will StackOverflow for large lists. Use foldLeft instead */
-	def foldLeft[A,B](l: List[A], z: B)(f: (B, A) => B): B = {
-		l match {
-			case Nil => z // f(z, head)
-			case Cons(head, tail) => foldLeft(tail, f(z, head))(f)
-			 // cause writing in this way, the f will be invoked in the last invocation
-			// but  tail has reduced the List to One
-			// Cons(1, Cons(2, Cons(3, Nil)))
-			// foldLeft(Cons(2, Cons(3, Nil)), 0)(_+ _)
-			// foldLeft(Cons(3, Nil), 0)(_+ _)
-		}
-	}
-
 	// EXERCISE 11: Write sum, product  and a function to compute the length of  a list using foldLeft
 	def sum2(ins: List[Int]): Int = foldLeft(ins, 0)(_ + _)
 	def product2(ins: List[Int]): Int = foldLeft(ins, 1)(_ * _)
@@ -149,5 +150,27 @@ object List {
 	def reverse[A](ins: List[A]): List[A] = foldLeft(ins, Nil: List[A])((B ,A) => Cons(A, B))
 
 	// EXERCISE 14: Implement append in terms of either foldLeft or foldRight
-	def append[A](ins: List[A], a: A) = ""
+	def append[A](ins: List[A], a: A) = reverse(Cons(a, reverse(ins)))
+	def append1[A](ins: List[A], a: A) = foldRight(ins, Cons(a, Nil))((each: A, b: List[A]) => Cons(each, b))
+
+	// EXERCISE 13 (hard): Can you write foldLeft in terms of foldRight? How about the other way around?
+	// def foldLeft = foldRight
+	// def foldRight[A, B](as: List[A], z: B)(f: (A, B) => B): B = {
+	def foldLeft1[A,B](l: List[A], z: B)(f: (B, A) => B): B = {
+		foldRight(reverse(l), z) { (a: A, b: B) => f(b, a) }
+	}
+
+	// EXERCISE 15 (hard): Write a function that concatenates a list of lists into a single list. Its runtime should be linear in the total length of all lists
+	def flatten[A](ins: List[List[A]]): List[A] = {
+		@tailrec def go[A](acc: List[A], each: List[A]): List[A] = {
+			each match {
+				case Nil => acc
+				case Cons(head, tail) => go(append(acc, head), tail)
+			}
+		}
+		ins match {
+			case Cons(head, tail) => go(head, flatten(tail))
+			case _ => Nil
+		}
+	}
 }

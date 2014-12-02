@@ -1,10 +1,12 @@
 package ch03
 
+import scala.annotation.tailrec
+
 /**
  * Created by allen on 14-11-30.
  */
 object Excercise1 extends App {
-	import ch03.List.{ sum, tail, drop, isEmpty, apply, length, foldRight, sum2, product2, length2 , reverse }
+	import ch03.List.{ sum, tail, drop, isEmpty, apply, length, foldRight, sum2, product2, length2 , reverse, append, append1, foldLeft, foldLeft1, flatten }
 	val x = List(1,2,3,4,5) match {
 		case Cons(x, Cons(2, Cons(4, _))) => x
 		case Nil => 42
@@ -15,6 +17,9 @@ object Excercise1 extends App {
 	println(isEmpty(ch03.Nil))
 	println(x)
 	val sampleList = apply(1, 2, 23, 45, 56,77)
+	val sampleList1 = apply(46, 78, 12, 90)
+	val concatedList = Cons(sampleList, Cons(sampleList1, Nil))
+
 	println(tail(sampleList))
 	println(drop(Nil, 3))
 	println(length(sampleList))
@@ -22,5 +27,12 @@ object Excercise1 extends App {
 	println(sum2(sampleList))
 	println(product2(sampleList))
 	println(length2(sampleList))
-	println(reverse(sampleList))
+	println(" reverse " + reverse(sampleList))
+	println(" append " + append(sampleList, 100))
+	println(" append1 " + append1(sampleList, 100))
+	println(" foldLeft foldRigt")
+	println(foldLeft(sampleList, 100)(_ - _))
+	println(foldLeft1(sampleList, 100)(_ - _))
+	// println(" go 的返回值 " + go(sampleList, sampleList1))
+	println(flatten(concatedList))
 }
