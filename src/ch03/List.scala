@@ -179,9 +179,21 @@ object List {
 	def map[A,B](l: List[A])(f: A => B): List[B] = {
 		val cc = (a:A, b: B) => Cons(f(a), Nil)
 		// def foldRight[A, B](as: List[A], z: B)(f: (A, B) => B): B = {
-		foldRight(List(1,2,3), Nil:List[Int])(Cons(_,_))
+		// foldRight(List(1,2,3), Nil:List[Int])(Cons(_,_))
 		// foldRight(l, Nil:List[B])((h,t) => Cons(f(h),t))
 		foldRight(l, Nil:List[B]) { (each, acc) => Cons(f(each), acc) } // currying will do automatic type inference, so the each, acc type will be automatically infered
 	}
+
+	// EXERCISE 19: Write a function filter that removes elements from a list unless they satisfy a given predicate. Use it to remote all odd numbers from a List[Int]
+	def filter[A](l: List[A])(f: A => Boolean): List[A]= {
+		foldRight(l, Nil:List[A]) { (each, acc) =>
+			if (f(each)) Cons(each, acc) else acc
+		}
+	}
+
+	// def flatMap[A,B](l: List[A])(f: A => List[B]): List[B]
+	// For instance flatMap(List(1,2,3))(i => List(i,i))  should result in List(1,1,2,2,3,3)
+	// EXERCISE 20: Write a function flatMap, that works like map except that the function given will return a list instead of a single result, and that list should be
+	// inserted into the final resulting list
 
 }

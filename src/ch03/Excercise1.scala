@@ -6,7 +6,7 @@ import scala.annotation.tailrec
  * Created by allen on 14-11-30.
  */
 object Excercise1 extends App {
-	import ch03.List.{ sum, tail, drop, isEmpty, apply, length, foldRight, sum2, product2, length2 , reverse, append, append1, foldLeft, foldLeft1, flatten, map }
+	import ch03.List.{ sum, tail, drop, isEmpty, apply, length, foldRight, sum2, product2, length2 , reverse, append, append1, foldLeft, foldLeft1, flatten, map, filter }
 	val x = List(1,2,3,4,5) match {
 		case Cons(x, Cons(2, Cons(4, _))) => x
 		case Nil => 42
@@ -38,4 +38,5 @@ object Excercise1 extends App {
 	println(" map +1" + map(sampleList)(_ + 1))
 	val doubleList = apply(1.0, 2.0, 3.0, 4.0)
 	println(" map double to String" + map(sampleList)(_ .toString))
+	println(" filter " + filter(sampleList)(_ > 50))
 }
