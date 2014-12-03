@@ -6,7 +6,10 @@ import scala.annotation.tailrec
  * Created by allen on 14-11-30.
  */
 object Excercise1 extends App {
-	import ch03.List.{ sum, tail, drop, isEmpty, apply, length, foldRight, sum2, product2, length2 , reverse, append, append1, foldLeft, foldLeft1, flatten, map, filter }
+	import ch03.List
+	import ch03.List.{ sum, tail, drop, isEmpty, apply, length, foldRight, sum2, product2 }
+	import ch03.List.{ length2 , reverse, append, append1, foldLeft, foldLeft1, flatten, map, filter, flatMap, filter1, zipWith, hasSubsequence }
+
 	val x = List(1,2,3,4,5) match {
 		case Cons(x, Cons(2, Cons(4, _))) => x
 		case Nil => 42
@@ -16,8 +19,8 @@ object Excercise1 extends App {
 	}
 	println(isEmpty(ch03.Nil))
 	println(x)
-	val sampleList = apply(1, 2, 23, 45, 56,77)
-	val sampleList1 = apply(46, 78, 12, 90)
+	val sampleList = List(1, 2, 23, 45, 56,77)
+	val sampleList1 = List(46, 78, 12, 90)
 	val concatedList = Cons(sampleList, Cons(sampleList1, Nil))
 
 	println(tail(sampleList))
@@ -39,4 +42,9 @@ object Excercise1 extends App {
 	val doubleList = apply(1.0, 2.0, 3.0, 4.0)
 	println(" map double to String" + map(sampleList)(_ .toString))
 	println(" filter " + filter(sampleList)(_ > 50))
+	println( " flatMap " + flatMap(sampleList)(i => Cons(i, Cons(i, Nil))))
+	println(" flatMap Test  For " + flatMap(sampleList)(i => List((i,i))))
+	println(" filter1 " + filter1(sampleList)(_ > 56))
+	println(" zipWith " + zipWith(sampleList, sampleList1)((_, _)))
+	println(" hasSubsequences " +  hasSubsequence(sampleList, List(1, 3)) )
 }

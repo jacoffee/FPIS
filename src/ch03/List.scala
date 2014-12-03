@@ -176,6 +176,7 @@ object List {
 
 	// EXERCISE 16: Write a function that transforms a list of integers by adding 1 to each element.
 	// (Reminder: this should be a pure function that returns a new List!)
+	// ****************
 	def map[A,B](l: List[A])(f: A => B): List[B] = {
 		val cc = (a:A, b: B) => Cons(f(a), Nil)
 		// def foldRight[A, B](as: List[A], z: B)(f: (A, B) => B): B = {
@@ -195,5 +196,25 @@ object List {
 	// For instance flatMap(List(1,2,3))(i => List(i,i))  should result in List(1,1,2,2,3,3)
 	// EXERCISE 20: Write a function flatMap, that works like map except that the function given will return a list instead of a single result, and that list should be
 	// inserted into the final resulting list
+	def flatMap[A,B](l: List[A])(f: A => List[B]): List[B] = flatten(map[A, List[B]](l)(f(_)))
+
+	// EXERCISE 21: Can you use flatMap to implement  filter ?
+	def filter1[A](l: List[A])(f: A => Boolean): List[A]= flatMap[A, A](l) { a => { if (f(a)) Cons(a, Nil) else Nil } }
+
+	// EXERCISE 22: Write a function that accepts two lists and constructs a new list
+	// by adding corresponding elements. For example, List(1,2,3)  and List(4,5,6) becomes List(5,7,9).
+	// ****************
+	def zipWith[A, B, C](a: List[A], b: List[B])(f: (A, B) => C): List[C] = {
+		(a, b) match {
+			case (Nil, _) => Nil  // exit
+			case (_, Nil) => Nil
+			case (Cons(h, t), Cons(h1, t1)) => Cons(f(h, h1), zipWith(t, t1)(f))
+		}
+	}
+
+	// EXERCISE 24 (hard): As an example, implement hasSubsequence for
+	 // checking whether a contains another as a subsequence. For instance,List List
+	 // List(1,2,3,4)  would have List(1,2) List(2,3) List(4)
+	def hasSubsequence[A](l: List[A], sub: List[A]): Boolean = zipWith(l, sub)((_, _)) == flatMap(sub)(i => List((i,i)))
 
 }

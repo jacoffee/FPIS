@@ -1,5 +1,6 @@
 package ch02
 
+
 /*
 	Created by allen on 14-11-29
 	EXERCISE 2: Implement , which checks whether an isisSorted Array[A] sorted according to a given comparison function
