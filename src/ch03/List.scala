@@ -216,5 +216,4 @@ object List {
 	 // checking whether a contains another as a subsequence. For instance,List List
 	 // List(1,2,3,4)  would have List(1,2) List(2,3) List(4)
 	def hasSubsequence[A](l: List[A], sub: List[A]): Boolean = zipWith(l, sub)((_, _)) == flatMap(sub)(i => List((i,i)))
-
 }
