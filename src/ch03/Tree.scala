@@ -64,7 +64,10 @@ object Tree {
 
 	// EXERCISE 27: Write a function depth that returns the maximum path length from the root of a tree to any leaf
 	def maxDepth[A](tree: Tree[A]): Int = {
-		3
+		tree match {
+			case Leaf(_) => 0
+			case Branch(left, right) => 1 + maxDepth(left) + maxDepth(right) // Tree like recursion
+		}
 	}
 
 	// val newTree = Branch[Int](Leaf(1), Branch[Int](Leaf(3), Branch[Int](Leaf(4), Leaf(56))))
