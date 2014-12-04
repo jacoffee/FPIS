@@ -31,10 +31,12 @@ object Tree {
 		go(tree)
 	}
 
+	//  Parant
+	//  Branch(left, right)
 	def size1[A](tree: Tree[A]): Int = {
 		tree match {
 			case Leaf(v) => 1
-			case Branch(left, right) => size(left) + size(right)
+			case Branch(left, right) => 1 + size(left) + size(right)
 		}
 	}
 
@@ -86,15 +88,41 @@ object Tree {
 		}
 	}
 
-	// EXERCISE 29: Generalize size, maximum, depth, map writing a new function that abstracts over their similarities.
-	// Int => Leaf(5)  max Leaf
-	def size3(tree: Tree[Int]) = fold(tree, 1)((_, acc) => acc + 1)
-	def fold[A, B](tree: Tree[A], z: B)(f: (A, B) => B): Tree[B] = {
+	//  Like `foldRight` for lists, `fold` receives a "handler" for each of the data constructors of the type, and recursively accumulates some value using these handlers.
+	// As with `foldRight`, `fold(t)(Leaf(_))(Branch(_,_)) == t`, and
+	// we can use this function to implement just about any recursive function that would otherwise be defined by pattern matching.
+
+	//  Suck and failed version
+	// ****************
+	// I don't know How to assemble them when applying some sort of logic  to the Data Constructor
+	def fold1[A, B](tree: Tree[A], z: B)(f: (A, B) => B): Tree[B] = {
 		tree match {
 			case Leaf(v) => Leaf(f(v, z))
 			case Branch(left, right) => Branch(
-				fold(left, z)(f), fold(right, z)(f)
+				fold1(left, z)(f), fold1(right, z)(f)
 			)
 		}
+	}
+
+	// Answer version
+	// f is the handler emerging aforehead, g is the magic to assmeble the changed piece
+	def fold[A, B](tree: Tree[A])(f: A => B)(g: (B, B) => B): B = {
+		tree match {
+			case Leaf(v) => f(v)
+			case Branch(left, right) => g(fold(left)(f)(g), fold(right)(f)(g))
+		}
+	}
+
+	val newTree = Branch[Int](Leaf(1), Leaf(56))
+
+	// EXERCISE 29: Generalize size, maximum, depth, map writing a new function that abstracts over their similarities.
+	// Int => Leaf(5)  max Leaf
+	def sizeViaFold[A](tree: Tree[A]): Int = fold(tree)(a => 1)(_ + _)
+
+	def maxViaFold(tree: Tree[Int]): Int = fold(tree)(a => a)(_ max _)
+
+	def mapViaFold[A, B](tree: Tree[A])(f: A => B): Tree[B] = {
+		fold[A, Tree[B]](tree)(a => Leaf(f(a)))(Branch(_, _))
+		//   fold[A, B] -> B的Type是 Tree[B],  而到了 Branch[B] -> 此处的B定义的是data constructor中的类型
 	}
 }
