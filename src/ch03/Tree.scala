@@ -111,7 +111,7 @@ object Tree {
 	}
 
 	// Answer version
-	// f is the handler emerging aforehead, g is the magic to assmeble the changed piece
+	// f is the handler to change every passed value, g is the magic to assmeble the changed piece
 	def fold[A, B](tree: Tree[A])(f: A => B)(g: (B, B) => B): B = {
 		tree match {
 			case Leaf(v) => f(v)

@@ -9,6 +9,7 @@ object Excercise1 extends App {
 	import ch03.List
 	import ch03.List.{ sum, tail, drop, isEmpty, apply, length, foldRight, sum2, product2 }
 	import ch03.List.{ length2 , reverse, append, append1, foldLeft, foldLeft1, flatten, map, filter, flatMap, filter1, zipWith, hasSubsequence }
+	import ch03.List.dropWhile1
 
 	val x = List(1,2,3,4,5) match {
 		case Cons(x, Cons(2, Cons(4, _))) => x
@@ -47,4 +48,8 @@ object Excercise1 extends App {
 	println(" filter1 " + filter1(sampleList)(_ > 56))
 	println(" zipWith " + zipWith(sampleList, sampleList1)((_, _)))
 	println(" hasSubsequences " +  hasSubsequence(sampleList, List(1, 2, 23, 45, 56,77)) )
+
+	println(" dropWhile1 " + dropWhile1(sampleList)(_ < 24))
+
+	println(" hasSubsequence1 " + hasSubsequence(sampleList, List(1, 2, 23, 45, 56)))
 }

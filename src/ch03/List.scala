@@ -42,15 +42,22 @@ object List {
 			you can generalize it away by pulling subexpressions out into function arguments
 			任何时候，你碰到了这样的重复。你可以把子表达式抽到一个函数中并且将它们当作函数参数
 			head  sum =>  f: (A, B) => B
+		The Core Thought of FoldRight, you extend the invocation chain to the most right and accumulate the functioned value to the left
 	*/
 	def foldRight[A, B](as: List[A], z: B)(f: (A, B) => B): B = {
 		as match {
-			case Nil => z
+			case Nil => z //exit
 			case Cons(head, tail) => f(head, foldRight(tail, z)(f)) // 1 :: Nil -> f(1, foldRight(Nil, 0)f)
 		}
+		// Cons(3 :: Cons(2 :: Nil))
+		// f(3, foldRight(Cons(2 :: Nil), 0)(f))
+		// f(3, f(2, foldRight(Nil, 0)(f)))
+		/// val f = (a: Int, b: Int) => a + b
+		// f(3, f(2,  0))
 	}
 
 	/* EXERCISE 10: foldRight is not tail-recursive and will StackOverflow for large lists. Use foldLeft instead */
+	// While the foldLeft is on the contrary, when invocated from left to right, the value has been accumulated rather than accumulated at the end
 	def foldLeft[A,B](l: List[A], z: B)(f: (B, A) => B): B = {
 		l match {
 			case Nil => z // f(z, head)
@@ -70,6 +77,8 @@ object List {
 		foldRight(Cons(1, Cons(2, Cons(3, Nil))), 0)(_ + _)
 		f(1, foldRight(Cons(2, Cons(3, Nil)), 0)(_ + _)
 	*/
+
+	// varargs In Scala
 
 	def apply[A](as: A*): List[A] =
 		if (as.isEmpty) Nil
@@ -101,6 +110,17 @@ object List {
 		go(as, n)
 	}
 
+
+	def drop2[A](as: List[A], n: Int): List[A] = {
+		if (n <=0) as
+		else {
+			as match {
+				case Nil => Nil
+				case Cons(_, tail) => drop2(tail, n-1) // accumulation and counter change interchangeably
+			}
+		}
+	}
+
 	/*
 		EXERCISE 4: Implement dropWhile, which removes elements from the List prefix as long as they match a predicate. Again, notice these functions take
 		time proportional only to the number of elements being dropped—we do not need
@@ -112,6 +132,14 @@ object List {
 			else loop(tail(as))
 		}
 		loop(as)
+	}
+
+	def dropWhile1[A](as:List[A])(p: A => Boolean): List[A] = {
+		as match {
+			case Nil => sys.error("")
+			case Cons(h, t) if (p(h)) => dropWhile1(t)(p)
+			case _  => as
+		}
 	}
 
 	// def dropWhile[A](as:List[A], p: A => Boolean): List[A] = {
@@ -127,6 +155,13 @@ object List {
 	def setHead[A](as: List[A], anotherHead: A): List[A] = {
 		if (isEmpty(as)) as
 		else Cons(anotherHead, tail(as))
+	}
+
+	def setHead1[A](as: List[A], anotherHead: A): List[A] = {
+		as match {
+			case Nil => sys.error(" setHead on empty List")
+			case Cons(_, t) => Cons(anotherHead, t)
+		}
 	}
 
 	/*
@@ -215,5 +250,41 @@ object List {
 	// EXERCISE 24 (hard): As an example, implement hasSubsequence for
 	 // checking whether a contains another as a subsequence. For instance,List List
 	 // List(1,2,3,4)  would have List(1,2) List(2,3) List(4)
+
+
+	// Core Thought
+	// List(1, 2) flatMap yield List(1, 1, 2, 2)
+	// List(1, 2) zipWith yield List(1, 1, 2, 2)
 	def hasSubsequence[A](l: List[A], sub: List[A]): Boolean = zipWith(l, sub)((_, _)) == flatMap(sub)(i => List((i,i)))
+
+	// List(1, 2, 3, 4) startsWith List(1, 2)
+	// List(1, 2, 3, 4) startsWith List(2, 3)  No
+	// List(2, 3, 4) startsWith List(2, 3) Yes tranversion
+	// def hasSubsequence
+
+	def startsWith[A](l: List[A], prefix: List[A]): Boolean = {
+		(l , prefix)  match {
+			case (_, Nil) => true
+			case (Cons(h1, t1), Cons(h2, t2)) if (h1 == h2) => startsWith(t1, t2)
+			case _ => false
+		}
+	}
+
+	// 3 5 2
+	// 3 2
+	def hasSubsequence1[A](l: List[A], sub: List[A]): Boolean = {
+		(l, sub) match {
+			case (_, Nil) => true
+			case (Cons(h1, t1), Cons(h2, t2)) if startsWith(l, sub) => true
+			case (Cons(h1, t1), Cons(h2, t2)) => hasSubsequence1(t1, sub)
+			case _ => false
+		}
+
+		// elogant way
+		l match {
+			case Nil => false
+			case Cons(h, t) if startsWith(l, sub) => true
+			case Cons(h, t) => hasSubsequence1(t, sub)
+		}
+	}
 }
