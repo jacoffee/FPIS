@@ -69,7 +69,7 @@ object Tree {
 	def maxDepth[A](tree: Tree[A]): Int = {
 		tree match {
 			case Leaf(_) => 0
-			case Branch(leaf, right) => 1 + max(maxDepth(leaf), maxDepth(right))
+			case Branch(left, right) => 1 + maxDepth(left) + maxDepth(right) // Tree like recursion
 		}
 	}
 
