@@ -12,6 +12,7 @@ case class Branch[A](left: Tree[A], right: Tree[A]) extends Tree[A]
 
 object Tree {
 	// ADT and Pattern Match
+	// Recursivion is really matters when you want to write Collection Operation
 
 	// EXERCISE 25: Write a function size that counts the number of nodes in a tree.
 	def size[A](tree: Tree[A]) = {
@@ -31,8 +32,8 @@ object Tree {
 		go(tree)
 	}
 
-	//  Parant
-	//  Branch(left, right)
+	// Parant
+	// Branch(left, right)
 	def size1[A](tree: Tree[A]): Int = {
 		tree match {
 			case Leaf(v) => 1
@@ -63,8 +64,13 @@ object Tree {
 	}
 
 	// EXERCISE 27: Write a function depth that returns the maximum path length from the root of a tree to any leaf
+	//  Parant
+	//  Branch(left, right)
 	def maxDepth[A](tree: Tree[A]): Int = {
-		3
+		tree match {
+			case Leaf(_) => 0
+			case Branch(leaf, right) => 1 + max(maxDepth(leaf), maxDepth(right))
+		}
 	}
 
 	// val newTree = Branch[Int](Leaf(1), Branch[Int](Leaf(3), Branch[Int](Leaf(4), Leaf(56))))
