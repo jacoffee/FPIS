@@ -1,0 +1,119 @@
+package ch04
+
+import java.util.regex.{PatternSyntaxException, Pattern}
+
+import ch03.{ List, Cons, Nil }
+
+/**
+ * Created by allen on 14-12-5.
+ */
+
+// Here we are going to place our functions, when possible, inside the body of the Option trait, so they can be called with OO syntax
+// obj.fn(arg1)
+sealed trait Option[+A] {
+	def get: A
+	def isEmpty: Boolean
+
+	def toList[A] = if (isEmpty) Nil else Cons(this.get, Nil)
+
+	def map[B](f: A => B): Option[B] = {
+		if (isEmpty) None else Some(f(this.get))
+	}
+	def flatMap[B](f: A => Option[B]): Option[B] = {
+		if (isEmpty) None else f(this.get)
+	}
+
+	// compatibility
+	// indicates the argument will not be evaluated until it is needed by the function
+	// => B || B
+	def getOrElse[B >: A](default: => B): B = {
+		if (isEmpty) default else this.get
+	}
+
+	def orElse[B >: A](ob: => Option[B]): Option[B] = {
+		if (isEmpty) ob else this
+	}
+	def filter(f: A => Boolean): Option[A] = {
+		if (isEmpty || !f(this.get)) None
+		else  Some(this.get)
+	}
+
+	def lift[A, B](f: A => B): Option[A] => Option[B] = _ map f
+
+	def pattern(s: String): Option[Pattern] = {
+		try {
+			Some(Pattern.compile(s))
+		} catch {
+			case e: PatternSyntaxException => None
+		}
+	}
+
+	def mkMatcher(pat: String): Option[String => Boolean] = {
+		pattern(pat) map { p =>
+			(str: String) => p.matcher(pat).matches
+		}
+	}
+
+	def bothMatch(pat: String, pat2: String, s: String): Option[Boolean] = {
+		for {
+			f <- mkMatcher(pat)
+			g <- mkMatcher(pat2)
+		} yield f(s) && g(s)  // Function Lifting
+	}
+
+	/*
+	A for-comprehension like this is simply syntax sugar. Internally, Scala will translate the above to ordinary method calls to map and  flatMap
+	*/
+	def bothMatch_1(pat: String, pat2: String, s: String): Option[Boolean] = {
+		mkMatcher(pat).flatMap { p1 =>
+			 mkMatcher(pat2).map { p2 =>
+				 p1(s) && p2(s)
+			}
+		}
+	}
+
+	// EXERCISE 2: Implement the function variance(if the mean is m, variance is the mean of math.pow(x - m, 2) , see ) in terms of anddefinition mean and flatMap.
+	def variance(xs: Seq[Double]): Option[Double] = {
+		// mean
+		//Math.pow(x -m , 2)
+		if (xs.isEmpty) None
+		else {
+			val mean = xs.sum / xs.size
+			Some(
+				(xs.map(x => Math.pow(x - mean, 2)).sum) / xs.size
+			)
+		}
+	}
+
+	// EXERCISE 3: bothMatch is an instance of a more general pattern. Write a
+	// generic function map2,  that combines two Option values using a binary function.map2
+	// If either Option value is None , then the return value is too.
+	def map2[A,B,C](a: Option[A], b: Option[B])(f: (A, B) => C): Option[C] = {
+		for {
+			first <- a
+			second <- b
+		} yield {
+			f(first, second)
+		}
+	}
+
+	// EXERCISE 4: Re-implement bothMatch above in terms of this new function to the extent possible
+	def bothMatch_2(pat1: String, pat2: String, s: String): Option[Boolean] = {
+		map2(mkMatcher(pat1), mkMatcher(pat2)) {
+			(p1, p2) => p1(s) && p2(s)
+		}
+	}
+
+}
+case class Some[A](value: A) extends Option[A] {
+	def get = value
+	def isEmpty = false
+}
+case object None extends Option[Nothing] {
+	def get = throw new NoSuchElementException("None.get")
+	def isEmpty = true
+}
+
+object Option {
+	implicit def option2Iterable[A](xo: Option[A]): List[A] = xo.toList
+}
