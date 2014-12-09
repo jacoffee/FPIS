@@ -34,15 +34,24 @@ object Queue {
 }
 
 // Another Way of doing so
-trait MyQueue[T] { // default -> nonvariant  +T makes it variant
+trait MyQueue[+T] { // default -> nonvariant  +T makes it variant
 	def head: T
 	def tail: MyQueue[T]
-	def append(t: T): MyQueue[T]
+	def append[U >: T](u: U): MyQueue[U]
+	def isEmpty: Boolean
+	def foreach[B](f: T => B): Unit
+	// this position is negative casue in implemetation hierarchy, something can be done in subtype can not be done in supertype
+	// if MyQueue is defined as Covaraint, it means more flexible, its subtype can be passed into the append method
+	// however method works on T, does not apply to its subtype
+	// Therefore the compiler warning is absolutly right
+
+	// The trick is lower bound
+	// In order to prevent subtype of T be passed into the append method, we make it as the lower bound
 	/*
 		Error:(40, 13) covariant type T occurs in contravariant position in type T of value t
 		def append(t: T): MyQueue[T]
 				^
-		Reassignable fields are a special case of the rule that disallows type parameters annotated with + from being used as method parameter types. 
+		Reassignable fields are a special case of the rule that disallows type parameters annotated with + from being used as method parameter types.
 	*/
 }
 
@@ -50,7 +59,7 @@ object MyQueue {
 
 	def apply[T](ts: T*): MyQueue[T] = new MyQueueImpl(ts.toList, SNil)
 
-	private class MyQueueImpl[T](
+	private class MyQueueImpl[+T](
 		private val leading: SList[T],
 		private val tailing: SList[T]
 	) extends MyQueue[T] {
@@ -67,7 +76,12 @@ object MyQueue {
 			new MyQueueImpl(q.leading.tail, q.tailing)
 		}
 
-		def append(t: T): MyQueue[T] = new MyQueueImpl(leading, t :: tailing)
+		def append[U >: T](u: U): MyQueue[U] = new MyQueueImpl(leading, u :: tailing)
+
+		def isEmpty = leading.isEmpty && tailing.isEmpty
+		def foreach[B](f: T => B) {
+			(leading ::: tailing.reverse).foreach(f)
+		}
 	}
 }
 
@@ -83,8 +97,22 @@ class Cell[T](init: T) {
 object Test extends App {
 	def doesNotCompile(q: MyQueue[AnyRef]) = {} // class Queue takes type parameters
 	// Queue is a trait, but not a type. Queue is not a type because it takes a type parameter.
- 	val stringQueue = MyQueue("nihao", "enqueue", "fast killing")
-	// doesNotCompile(stringQueue)
+	//class Fruit {}
+	class Apple(val name: String)
+	class Orange(val name: String)
+
+	def cotra(q: MyQueue[Apple]) = {}
+
+	val stringQueue = MyQueue("nihao", "enqueue", "fast killing")
+	doesNotCompile(stringQueue)
+
+	val fruitQ = MyQueue(new Orange("131"))
+	fruitQ.append(new Orange("12"))
+	fruitQ.append(new Apple("13"))
+	println(" fruitQ ")
+	fruitQ.foreach { o =>
+		println(o.name)
+	}
 
 	val c1 = new Cell[String] ("abc")
 //	val c2: Cell[Any] = c1
@@ -92,3 +120,4 @@ object Test extends App {
 //	val s: String = c1.get
 
 }
+
