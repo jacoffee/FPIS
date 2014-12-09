@@ -34,10 +34,16 @@ object Queue {
 }
 
 // Another Way of doing so
-trait MyQueue[T] {
+trait MyQueue[T] { // default -> nonvariant  +T makes it variant
 	def head: T
 	def tail: MyQueue[T]
 	def append(t: T): MyQueue[T]
+	/*
+		Error:(40, 13) covariant type T occurs in contravariant position in type T of value t
+		def append(t: T): MyQueue[T]
+				^
+		Reassignable fields are a special case of the rule that disallows type parameters annotated with + from being used as method parameter types. 
+	*/
 }
 
 object MyQueue {
@@ -61,8 +67,28 @@ object MyQueue {
 			new MyQueueImpl(q.leading.tail, q.tailing)
 		}
 
-		// [T] 不写会有问题d
 		def append(t: T): MyQueue[T] = new MyQueueImpl(leading, t :: tailing)
 	}
 }
 
+class Cell[T](init: T) {
+	private[this] var current = init
+	def get = init
+	def set(t: T): Unit = {
+		current = t
+	}
+}
+
+
+object Test extends App {
+	def doesNotCompile(q: MyQueue[AnyRef]) = {} // class Queue takes type parameters
+	// Queue is a trait, but not a type. Queue is not a type because it takes a type parameter.
+ 	val stringQueue = MyQueue("nihao", "enqueue", "fast killing")
+	// doesNotCompile(stringQueue)
+
+	val c1 = new Cell[String] ("abc")
+//	val c2: Cell[Any] = c1
+//	c2.set(1)
+//	val s: String = c1.get
+
+}
