@@ -101,14 +101,14 @@ object Test extends App {
 	class Apple(val name: String)
 	class Orange(val name: String)
 
-	def cotra(q: MyQueue[Apple]) = {}
+	//def cotra(q: MyQueue[Apple]) = {}
 
 	val stringQueue = MyQueue("nihao", "enqueue", "fast killing")
 	doesNotCompile(stringQueue)
 
 	val fruitQ = MyQueue(new Orange("131"))
-	fruitQ.append(new Orange("12"))
-	fruitQ.append(new Apple("13"))
+	val cc = fruitQ.append(new Orange("12"))
+	fruitQ.append(new Apple("13")) // MyQueue[Object] cause U >: Orange, Object is the supertype of
 	println(" fruitQ ")
 	fruitQ.foreach { o =>
 		println(o.name)
