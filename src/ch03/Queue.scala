@@ -5,7 +5,7 @@ package ch03
  */
 import  scala.collection.immutable.{ List => SList, Nil => SNil }
 
-// class Queue[+T] private  --->  it can be accessed only from within the class itself and its companion object
+// class Queue[+T] private  ---> The constructor can be accessed only from within the class itself and its companion object
 class Queue[+T] private(
 	private val leading: SList[T],
 	private val tailing: SList[T]
@@ -24,7 +24,9 @@ class Queue[+T] private(
 	}
 
 	// [T] 不写会有问题d
-	def append[T](t: T) = new Queue(leading, t :: tailing)
+	// def append[T](t: T) = new Queue(leading, t :: tailing) 此时Append中的Ｔ实际上已经不是Queue中的那个Ｔ了
+	// 因为append方法参数位置是negative position
+	def append[U >: T](u: U): Queue[U] = new Queue(leading, u :: tailing)
 }
 
 // One Way to hide the implementation of Queue
