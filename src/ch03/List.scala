@@ -287,4 +287,11 @@ object List {
 			case Cons(h, t) => hasSubsequence1(t, sub)
 		}
 	}
+
+	def exists[A](l: List[A])(predicate: A => Boolean): Boolean = {
+		l match {
+			case Nil => false
+			case Cons(head, tail) => if (predicate(head)) true else exists(tail)(predicate)
+		}
+	}
 }

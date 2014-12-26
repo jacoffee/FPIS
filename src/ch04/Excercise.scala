@@ -1,8 +1,9 @@
 package ch04
 
-/**
- * Created by allen on 14-12-5.
- */
+import ch03.List
+
 object Excercise extends App {
+	// def sequence[A](a: List[Option[A]]): Option[List[A]] = {
+	val optionList = List(Some("だいごく"), Some("ぎんこう"), None)
 
 }

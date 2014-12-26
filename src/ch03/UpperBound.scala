@@ -16,11 +16,8 @@ object UpperBound {
 	)
 
 	orderedMergeSort(people)
-	orderedMergeSort(
-		SList(1,2,3).map { num =>
-			new RichInt(num)
-		}
-	)
+	// TODO Left undone
+	// orderedMergeSort(SList(1,2,3).map(intWrapper))
 
 	def orderedMergeSort[T <: Ordered[T] ](xs:SList[T] ): SList[T] = {
 		// split into two pieces, compare the first element of the two collections

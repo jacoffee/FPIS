@@ -3,6 +3,7 @@ package ch04
 import java.util.regex.{PatternSyntaxException, Pattern}
 
 import ch03.{ List, Cons, Nil }
+import ch03.List.{ exists, foldLeft }
 
 /**
  * Created by allen on 14-12-5.
@@ -104,6 +105,22 @@ sealed trait Option[+A] {
 		}
 	}
 
+	/*
+		EXERCISE 5: Write a functionsequence , that combines a list of Options
+		into one option containing a list of all the values in the original list. If the
+		original list contains None even once, the result of the function should be None
+		otherwise the result should be with a list of all the values. Here is it signature
+	*/
+	def sequence[A](a: List[Option[A]]): Option[List[A]] = {
+		if (exists(a)(elem => elem.isEmpty)) None
+		else {
+			// def foldLeft[A,B](l: List[A], z: B)(f: (B, A) => B): B = {
+			Some(
+				foldLeft(a, Nil: List[A])((b, a) => Cons(a.get, Nil))
+			)
+		}
+	}
+
 }
 case class Some[A](value: A) extends Option[A] {
 	def get = value
@@ -115,5 +132,6 @@ case object None extends Option[Nothing] {
 }
 
 object Option {
+	// find implicit conversion in Companion Object
 	implicit def option2Iterable[A](xo: Option[A]): List[A] = xo.toList
 }
