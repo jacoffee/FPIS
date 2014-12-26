@@ -1,7 +1,6 @@
 package ch04
 
-import java.util.regex.{PatternSyntaxException, Pattern}
-
+import java.util.regex.{ PatternSyntaxException, Pattern }
 import ch03.{ List, Cons, Nil }
 import ch03.List.{ exists, foldLeft }
 
@@ -105,22 +104,6 @@ sealed trait Option[+A] {
 		}
 	}
 
-	/*
-		EXERCISE 5: Write a functionsequence , that combines a list of Options
-		into one option containing a list of all the values in the original list. If the
-		original list contains None even once, the result of the function should be None
-		otherwise the result should be with a list of all the values. Here is it signature
-	*/
-	def sequence[A](a: List[Option[A]]): Option[List[A]] = {
-		if (exists(a)(elem => elem.isEmpty)) None
-		else {
-			// def foldLeft[A,B](l: List[A], z: B)(f: (B, A) => B): B = {
-			Some(
-				foldLeft(a, Nil: List[A])((b, a) => Cons(a.get, Nil))
-			)
-		}
-	}
-
 }
 case class Some[A](value: A) extends Option[A] {
 	def get = value
@@ -134,4 +117,35 @@ case object None extends Option[Nothing] {
 object Option {
 	// find implicit conversion in Companion Object
 	implicit def option2Iterable[A](xo: Option[A]): List[A] = xo.toList
+
+
+	/*
+		EXERCISE 5: Write a functionsequence , that combines a list of Options
+		into one option containing a list of all the values in the original list. If the
+		original list contains None even once, the result of the function should be None
+		otherwise the result should be with a list of all the values. Here is it signature
+	*/
+	def sequence[A](a: List[Option[A]]): Option[List[A]] = {
+		if (exists(a)(elem => elem.isEmpty)) None
+		else {
+			// def foldLeft[A,B](l: List[A], z: B)(f: (B, A) => B): B = {
+			Some(
+				foldLeft(a, Nil: List[A])((b, a) => Cons(a.get, b))
+			)
+		}
+	}
+
+	/*
+		EXERCISE 6: Implement this function. It is straightforward to do using map
+		and sequence, but try for a more efficient implementation that only looks at the
+		list once.
+		 In fact, implement sequence in terms of  traverse
+	*/
+	def sequence1[A](a: List[Option[A]]): Option[List[A]] = {
+		None
+	}
+
+	def traverse[A, B](a: List[A])(f: A => Option[B]): Option[List[B]] = {
+		None
+	}
 }
