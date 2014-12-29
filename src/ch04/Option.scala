@@ -149,4 +149,15 @@ object Option {
 	def traverse[A, B](a: List[A])(f: A => Option[B]): Option[List[B]] = {
 		None
 	}
+
+	// TODO  in the future
+	/*
+	EXERCISE 9: In this implementation, map2 is only able to report one error,
+	even if both the name and the age are invalid. What would you need to change in
+	order to report both errors? Would you change map2 or the signature of mkPerson?
+	Or could you create a new data type that captures this requirement
+	better than does, with some additional structure? How would ,Either orElse
+	traverse sequence, and behave differently for that data type?
+	*/
+
 }
