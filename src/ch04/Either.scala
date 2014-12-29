@@ -85,7 +85,6 @@ sealed trait Either[+E,  +A] { self =>
 case class Left[+E](value: E) extends Either[E, Nothing]
 case class Right[+A](value: A) extends Either[Nothing, A]
 
-
 // Real Application for map2
 case class Person(val name: Name, val age: Age)
 sealed class Name(val value: String)
