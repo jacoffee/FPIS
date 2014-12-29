@@ -14,6 +14,7 @@ sealed trait Option[+A] {
 	def get: A
 	def isEmpty: Boolean
 
+	def nonEmpty = !isEmpty
 	def toList[A] = if (isEmpty) Nil else Cons(this.get, Nil)
 
 	def map[B](f: A => B): Option[B] = {

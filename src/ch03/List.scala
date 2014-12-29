@@ -1,6 +1,7 @@
 package ch03
 
 import scala.annotation.tailrec
+import ch04.{ Option, Some, None }
 
 /**
  * Created by allen on 14-11-30.
@@ -289,9 +290,25 @@ object List {
 	}
 
 	def exists[A](l: List[A])(predicate: A => Boolean): Boolean = {
-		l match {
-			case Nil => false
-			case Cons(head, tail) => if (predicate(head)) true else exists(tail)(predicate)
+		var these = l
+		while(!isEmpty(these)) {
+			if (predicate(head(these))) {
+				return true
+			}
+			these = tail(these)
 		}
+		false
+	}
+
+	def find[A](l: List[A])(predicate: A => Boolean): Option[A] = {
+		var these = l
+		while(!isEmpty(these)) {
+			val h = head(these)
+			if (predicate(h)) {
+				return Some(h)
+			}
+			these = tail(these)
+		}
+		None
 	}
 }

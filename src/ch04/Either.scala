@@ -1,5 +1,8 @@
 package ch04
 
+import ch03.{ Cons, List, Nil }
+import ch03.List.{ exists, foldLeft, find  }
+
 /*
 	One thing you may have noticed with is that it doesn't tell us very much about Option
 	what went wrong in the case of an exceptional condition
@@ -41,10 +44,68 @@ sealed trait Either[+E,  +A] { self =>
 			case (l1@ Left(e), _) => l1
 		}
 	}
+
+	def isLeft = self match {
+		case l @ Left(e) => true
+		case _ => false
+	}
+
+	def isRight = !isLeft
+
+	// 如果Either 存在一个Left 则结果就返回那个Left 否则返回List[Either[E, A]]
+	// def sequence[A](a: List[Option[A]]): Option[List[A]]
+	def sequence[EE >: E, C >: A](a: List[Either[EE, C]]): Either[EE, List[C]] = {
+		val matchedOption = find(a)({
+			_ match {
+				case l @Left(e) => true
+				case _ => false
+			}
+		})
+
+		matchedOption.map {
+			_ match {
+				case l @ Left(e) => Left(l.value)
+				case r @ Right(v) => Right(Cons(r.value, Nil))
+			}
+		}.getOrElse {
+			Right(
+				foldLeft(a, Nil: List[C])({
+					(b, a) => {
+						a match {
+							case l @ Left(e) => b
+							case r @ Right(v) => Cons(r.value, b)
+						}
+					}
+				})
+			)
+		}
+	}
 }
 
 case class Left[+E](value: E) extends Either[E, Nothing]
 case class Right[+A](value: A) extends Either[Nothing, A]
 
+
+// Real Application for map2
+case class Person(val name: Name, val age: Age)
+sealed class Name(val value: String)
+sealed class Age(val value: Int)
+
+class RealApp {
+	def mkName(name: String): Either[String, Name] = {
+		if (name.trim.isEmpty) Left("invalid name")
+		else Right(new Name(name))
+	}
+
+	def mkAge(age: Int): Either[String, Age] = {
+		if (age < 0) Left("invalid age")
+		else Right(new Age(age))
+	}
+
+	// brilliant and idiomatic realization of Field Check
+	def mkPerson(name: String, age: Int) = {
+		mkName(name).map2(mkAge(age))(Person(_, _))
+	}
+}
 
 
