@@ -129,7 +129,7 @@ trait Stream[+A] { self =>
 	def foldRight[B](b: => B)(f: (A, => B) => B):B= {
 		self match {
 			case Empty => b
-			case Cons(hd, tl) => f(hd(),  tl().foldRight(b)(f))
+			case Cons(hd, tl) => f(hd(),  tl().foldRight(b)(f)) // f(hd(), Empty)
 		}
 	}
 
@@ -145,16 +145,82 @@ trait Stream[+A] { self =>
 	def forAll(p: A => Boolean): Boolean = foldRight(true)({
 		(a, b) => p(a) && b
 	})
-
 	/* EXERCISE 6: Implement map, flatMap, filter and append using  foldRight */
-	def map[B >: A](f: A => B): Stream[B] =
-		foldRight(Empty: Stream[B])(cons(_, _))
+	def map[B >: A](f: A => B): Stream[B] = {
+		println(" map executed !!! ")
+		foldRight(Empty: Stream[B])((a, b) =>cons(f(a), b))
+	}
+
+	def appendOne[B >: A](b: B): Stream[B] = cons(b, self)
+	def append[B>:A](s: => Stream[B]): Stream[B] =
+		foldRight(s)((h,t) => cons(h,t))
+	def filter(p: A => Boolean): Stream[A] = {
+		println(" filter executed")
+		foldRight(Empty: Stream[A])((a, b) => if (p(a)) cons(a, b) else b)
+	}
+
+	def flatMap[B >: A](f: A => Stream[B]): Stream[B] = {
+		foldRight(Empty: Stream[B])((a, b) => {
+			// fetch every element in f(a) and put in b
+			@tailrec def go(each: Stream[B], acc: Stream[B]): Stream[B] = {
+				each match {
+					case Cons(hd, tl) => go(tl(), cons(hd(), acc))
+					case Empty => acc
+				}
+			}
+			go(f(a), b)
+			//利用ListBuffer 实现排序 不过每一次循环就会产生一个ListBuffer的开销
+		})
+	}
+
+	def flatMap1[B](f: A => Stream[B]): Stream[B] =
+		foldRight(Empty: Stream[B])((h,t) => f(h) append t)
+
+
+	/*
+		EXERCISE 7: Generalize ones slightly to the function constant which
+		returns an infinite Stream of a given value
+	*/
+	def constant[A](a: A): Stream[A] = cons(a, constant(a))
+
+	/*
+		EXERCISE 8: Write a function that generates an infinite stream of integers,
+		starting from n, then n +1,  n + 2,
+		n
+		n + 1
+		n + 2
+
+	*/
+	def from(n: Int): Stream[Int] = {
+		/*
+			cons(n, from(n+1))
+				cons(n+1, from(n+2))
+					cons(n + 2, from(n + 3))
+
+
+		*/
+		cons(n, from(n + 1))
+	}
+
+
+	/*
+		EXERCISE 9: Write a function fibs that generates the infinite stream of
+		Fibonacci numbers: 0, 1, 1, 2, 3, 5, 8, and so on
+	*/
+	def fibs: Stream[Int] = {
+		def go(cur: Int, prev: Int): Stream[Int] ={
+			cons(cur, go(cur + prev, cur))
+		}
+		// the first two calculations seem to be conflicting with the definition cause 1 is the next of 0
+		go(0, 1) // cons(0, go(1, 0))  cons(0, cons(1, cons(1, go(2, 1))))
+	}
 }
 
 object Stream {
 
 	def empty = Empty
 
+	// 1 Empty
 	def cons[A](hd: => A, tl: => Stream[A]): Stream[A] = {
 		// lazy val head = hd
 		// lazy val tail = tl
