@@ -8,7 +8,7 @@ import scala.annotation.tailrec
 object Excercise1 extends App {
 	import ch03.List
 	import ch03.List.{ sum, tail, drop, isEmpty, apply, length, foldRight, sum2, product2 }
-	import ch03.List.{ length2 , reverse, append, append1, foldLeft, foldLeft1, flatten, map, filter, flatMap, filter1, zipWith, hasSubsequence }
+	import ch03.List.{ length2 , reverse, append, append1, foldLeft, foldLeft1, flatten, map, filter, flatMap, filter1, zipWith, hasSubsequence, exists2 }
 	import ch03.List.dropWhile1
 
 	val x = List(1,2,3,4,5) match {
@@ -24,6 +24,7 @@ object Excercise1 extends App {
 	val sampleList1 = List(46, 78, 12, 90)
 	val concatedList = Cons(sampleList, Cons(sampleList1, Nil))
 
+	println(exists2(sampleList)(_ % 2 == 0))
 	println(tail(sampleList))
 	println(drop(Nil, 3))
 	println(length(sampleList))

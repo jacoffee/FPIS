@@ -57,6 +57,11 @@ object List {
 		// f(3, f(2,  0))
 	}
 
+	//implement exists in terms of foldRight
+	def exists2[A](as: List[A])(predicate: A => Boolean)= {
+		foldRight(as, false)((a, b) => predicate(a) || b)
+	}
+
 	/* EXERCISE 10: foldRight is not tail-recursive and will StackOverflow for large lists. Use foldLeft instead */
 	// While the foldLeft is on the contrary, when invocated from left to right, the value has been accumulated rather than accumulated at the end
 	def foldLeft[A,B](l: List[A], z: B)(f: (B, A) => B): B = {
