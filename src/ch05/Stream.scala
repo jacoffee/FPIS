@@ -3,7 +3,7 @@ package ch05
 import java.util.NoSuchElementException
 import scala.annotation.tailrec
 import scala.collection.mutable.ListBuffer
-
+import Stream._
 /**
  * Created by allen on 14-12-29.
  */
@@ -28,7 +28,7 @@ case class Cons[+A](hd: () => A, tl: () => Stream[A]) extends Stream[A] {
 case class Cons[+A](hd: () => A, tl: () => Stream[A]) extends Stream[A]
 
 trait Stream[+A] { self =>
-	def isEmpty: Boolean = self match {
+	def isEmpty = self match {
 		case Empty => true
 		case Cons(_, _) => false
 	}
@@ -76,11 +76,15 @@ trait Stream[+A] { self =>
 	def takeWhile(p: A => Boolean): Stream[A] = {
 		var these = self
 		var accmulation: Stream[A] = Empty
+		// Cons(() => 3, () => accmulation)
 		while (!these.isEmpty && p(these.head)) {
-			accmulation = Cons(() => head, () => accmulation)
+			val h = these.head // 使用变量接收 破除these.head 的引用
+			accmulation = cons(h, Empty) // 嵌套太深
 			these = these.tail
 		}
 		accmulation
+		// 此时结果是List(1) 因为整个循环结束之后 Stream 变成了  Stream(1, 5, 1, 5, 10, 42)
+		// 由于延迟计算，所以these.head 变成了1
 	}
 
 	def takeWhile2(p: A => Boolean): Stream[A] = {
@@ -141,6 +145,10 @@ trait Stream[+A] { self =>
 	def forAll(p: A => Boolean): Boolean = foldRight(true)({
 		(a, b) => p(a) && b
 	})
+
+	/* EXERCISE 6: Implement map, flatMap, filter and append using  foldRight */
+	def map[B >: A](f: A => B): Stream[B] =
+		foldRight(Empty: Stream[B])(cons(_, _))
 }
 
 object Stream {
