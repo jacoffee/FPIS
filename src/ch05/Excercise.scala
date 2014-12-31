@@ -4,10 +4,11 @@ package ch05
  * Created by allen on 14-12-29.
  */
 object Excercise extends App {
-	val stream = Stream(1, 2, 3, 4)
+	val stream = Stream(1, 2, 3, 4, 10)
+	val stream2 = Stream(2, 3, 4, 5)
 //	println(stream.toList1)
 	println(" take " + stream.take(3).toList)
-	println(" takeViaMap " + stream.takeViaFold(3).toList)
+	println(" takeViaFold " + stream.takeViaFold(3).toList)
 //	println(" takeWhile2 " + stream.takeWhile2(_ > 2).toList)
 //	println(" takeWhile3 " + stream.takeWhile3(_ > 2).toList)
 //	println(" exists " + stream.exists(_ % 14 == 0))
@@ -33,6 +34,21 @@ object Excercise extends App {
 	println(" fibs " + stream.fibs.take(8).toList)
 
 	println(" fibsViaFold " + stream.fibsViaFold.take(8).toList)
+
+	println(" zipWith " + stream.zipWith(stream2)(_ * _).toList)
+	println(" zipWithViaFold " + stream.zipWithViaFold(stream2)(_ * _).toList)
+
+
+	println(" zipWithAll " + stream.zipWithAll[Int, Int](stream2)(
+		(first, second) => {
+			(first, second) match {
+				case (Some(a), Some(b)) => a * b
+				case (Some(a), None) => a
+				case (None, Some(b)) => b
+				case (None, None) => 1
+			}
+		}
+	).toList)
 }
 
 

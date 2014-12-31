@@ -250,21 +250,66 @@ trait Stream[+A] { self =>
 	each stream has been exhausted.
 	*/
 	def mapViaFold[B >: A](f: A => B): Stream[B] = {
-		unfold(self)(s => Some(f(s.head) -> s.tail))
+		unfold(self)(s => {
+			if (s.isEmpty) None
+			else Some(f(s.head) -> s.tail)
+		}) // 没有出口 会一直tail的
 	}
 	def takeViaFold(n: Int): Stream[A] = {
-		// n 怎么减小
-		var count = n
-		unfold(self)(s => {
-			val r = {
-				if (count <= 0 || s.isEmpty) None
-				else Some(s.head -> s.tail)
-			}
-			count -= 1
-			r
-		})
+		unfold((self, n)){
+			case (Cons(h, t), n) if n >1=> Some(h() -> (t(), n-1))
+			case (Cons(h, _), n) if n == 1=> Some(h() -> (Empty, n))
+			case _ => None
+		}
 	}
-	def zipWith[B, C](b: Stream[B])(f: (A, B) => C): Stream[C] = Empty
+
+	def zipWith[B, C](b: Stream[B])(f: (A, B) => C): Stream[C] = {
+		// change main invocator every time the tranversal carries out
+		(self, b) match {
+			case (Cons(h1, t1), Cons(h2, t2)) => cons(f(h1(),h2()), t1().zipWith(t2())(f))
+			case (Empty, _) => Empty
+			case (_, Empty) => Empty
+		}
+	}
+
+	def zipWithViaFold[B, C](b: Stream[B])(f: (A, B) => C): Stream[C] = {
+		unfold((self,b))(
+			_ match {
+				case (Cons(h1, t1), Cons(h2, t2)) => Some(f(h1(),h2()) -> (t1(), t2()))
+				case (Empty, _) => None
+				case (_, Empty) => None
+			}
+		)
+	}
+
+	// 作为调用者 你需要处理当 List(1,2,3,4) zipWithAll List(1,2,3)  前面这个多出来的应该怎样处理
+	def zipWithAll[B, C](s2: Stream[B])(f: (Option[A], Option[B]) => C): Stream[C] = {
+		unfold((self, s2))(
+			_ match {
+				case (Cons(h1, t1), Cons(h2, t2)) => Some(f(Some(h1()), Some(h2())) -> (t1(), t2()))
+				case (Empty, Cons(h2, t2)) => {
+					Some(f(None, Some(h2())) -> (Empty, t2()))
+				}
+				case (Cons(h1, t1), Empty) => {
+					Some(f(Some(h1()), None) -> (t1(), Empty))
+				}
+				case (Empty, Empty) => None
+			}
+		)
+	}
+
+	def zipAll[B >: A, C >: A](b: Stream[B])(f: (A, B) => C): Stream[C] = {
+		// 上面的Option 数据结构成功解决了 此处我需要通过 >: 来解决类型兼容的问题 如果不存在的话就直接使用None表示
+		(self, b) match {
+			case (Cons(h1, t1), Cons(h2, t2)) => cons(f(h1(),h2()), t1().zipWith(t2())(f))
+			case (Empty, Cons(h2, t2)) => Empty
+			case (Cons(h1, t1), Empty) => Empty
+			case (Empty, Empty) => Empty
+		}
+		Empty
+	}
+
+	//def zipAll[B, C](b: Stream[B])(f: (A, B) => C): Stream[C] = {
 
 }
 
