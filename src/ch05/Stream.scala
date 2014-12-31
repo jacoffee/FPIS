@@ -196,8 +196,6 @@ trait Stream[+A] { self =>
 			cons(n, from(n+1))
 				cons(n+1, from(n+2))
 					cons(n + 2, from(n + 3))
-
-
 		*/
 		cons(n, from(n + 1))
 	}
@@ -208,12 +206,66 @@ trait Stream[+A] { self =>
 		Fibonacci numbers: 0, 1, 1, 2, 3, 5, 8, and so on
 	*/
 	def fibs: Stream[Int] = {
-		def go(cur: Int, prev: Int): Stream[Int] ={
-			cons(cur, go(cur + prev, cur))
+		def go(prev: Int, cur: Int): Stream[Int] = {
+			cons(prev, go(cur, cur + prev))
 		}
 		// the first two calculations seem to be conflicting with the definition cause 1 is the next of 0
 		go(0, 1) // cons(0, go(1, 0))  cons(0, cons(1, cons(1, go(2, 1))))
 	}
+
+	/*
+		EXERCISE 10: We can write a more general stream building function. It takes
+		an initial state, and a function for producing both the next state and the next value
+		in the generated stream. It is usually called :unfold
+
+		Option is used to indicate when the should be terminated, if at all. The unfold
+	function is the most general Stream-building function
+	*/
+	// def uncons: Option[(A, Stream[A])]
+	def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] = {
+		f(z) match {
+			case Some((a, s)) => cons(a, unfold(s)(f))  // Some之中就是处理原来的逻辑 只不过将其抽象化了
+			case _ => Empty
+		}
+	}
+	/*
+		EXERCISE 11: Write fibs, from, constant ones, and in terms of unfold.
+	*/
+	def constantViaFold(n: Int): Stream[Int] = unfold(n)(n => Some(n, n))
+	//  def uncons: Option[(A, Stream[A])]
+	// ?? n如何自己增长
+	def fromViaFold(initial: Int): Stream[Int] = unfold(initial)(s => Some(s, s +1))
+
+	def fibsViaFold: Stream[Int] = {
+		unfold((0, 1))(s =>
+			Some(s._1, (s._2, s._1 + s._2))
+		)
+	}
+
+	/*
+	EXERCISE 12: Use to implement zip map take takeWhile
+	 The function should continue the traversal aszipAll
+	 zipAll
+	long as either stream has more elements — it uses to indicate Option whether
+	each stream has been exhausted.
+	*/
+	def mapViaFold[B >: A](f: A => B): Stream[B] = {
+		unfold(self)(s => Some(f(s.head) -> s.tail))
+	}
+	def takeViaFold(n: Int): Stream[A] = {
+		// n 怎么减小
+		var count = n
+		unfold(self)(s => {
+			val r = {
+				if (count <= 0 || s.isEmpty) None
+				else Some(s.head -> s.tail)
+			}
+			count -= 1
+			r
+		})
+	}
+	def zipWith[B, C](b: Stream[B])(f: (A, B) => C): Stream[C] = Empty
+
 }
 
 object Stream {
