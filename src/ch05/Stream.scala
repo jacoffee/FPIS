@@ -310,6 +310,15 @@ trait Stream[+A] { self =>
 	}
 
 	//def zipAll[B, C](b: Stream[B])(f: (A, B) => C): Stream[C] = {
+	/*
+		Using lazy lists, can you see
+		how you could implement hasSubsequence by combining some other
+		functions we have already written?
+	*/
+	def hasSubsequence[B >: A](b: Stream[B]): Boolean = {
+
+		false
+	}
 
 }
 
