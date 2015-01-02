@@ -48,7 +48,7 @@ object Excercise1 extends App {
 	println(" flatMap Test  For " + flatMap(sampleList)(i => List((i,i))))
 	println(" filter1 " + filter1(sampleList)(_ > 56))
 	println(" zipWith " + zipWith(sampleList, sampleList1)((_, _)))
-	println(" hasSubsequences " +  hasSubsequence(sampleList, List(1, 2, 23, 45, 56,77)) )
+	println(" hasSubsequences " +  hasSubsequence(sampleList, List(23, 45)) )
 
 	println(" dropWhile1 " + dropWhile1(sampleList)(_ < 24))
 

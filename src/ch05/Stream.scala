@@ -134,6 +134,7 @@ trait Stream[+A] { self =>
 	}
 
 	// not exists[A]
+	// in the worst suituation, the whole Stream has been tranversed
 	def exists(predicate: A => Boolean): Boolean = foldRight(false)({
 		(a, b) => predicate(a) || b
 	})
@@ -147,7 +148,6 @@ trait Stream[+A] { self =>
 	})
 	/* EXERCISE 6: Implement map, flatMap, filter and append using  foldRight */
 	def map[B >: A](f: A => B): Stream[B] = {
-		println(" map executed !!! ")
 		foldRight(Empty: Stream[B])((a, b) =>cons(f(a), b))
 	}
 
@@ -155,7 +155,6 @@ trait Stream[+A] { self =>
 	def append[B>:A](s: => Stream[B]): Stream[B] =
 		foldRight(s)((h,t) => cons(h,t))
 	def filter(p: A => Boolean): Stream[A] = {
-		println(" filter executed")
 		foldRight(Empty: Stream[A])((a, b) => if (p(a)) cons(a, b) else b)
 	}
 
@@ -298,16 +297,19 @@ trait Stream[+A] { self =>
 		)
 	}
 
-	def zipAll[B >: A, C >: A](b: Stream[B])(f: (A, B) => C): Stream[C] = {
-		// 上面的Option 数据结构成功解决了 此处我需要通过 >: 来解决类型兼容的问题 如果不存在的话就直接使用None表示
-		(self, b) match {
-			case (Cons(h1, t1), Cons(h2, t2)) => cons(f(h1(),h2()), t1().zipWith(t2())(f))
-			case (Empty, Cons(h2, t2)) => Empty
-			case (Cons(h1, t1), Empty) => Empty
-			case (Empty, Empty) => Empty
-		}
-		Empty
-	}
+//	def zipAll[B >: A, C >: A](b: Stream[B])(f: (A, B) => C): Stream[C] = {
+//		// 上面的Option 数据结构成功解决了 此处我需要通过 >: 来解决类型兼容的问题 如果不存在的话就直接使用None表示
+//		(self, b) match {
+//			case (Cons(h1, t1), Cons(h2, t2)) => cons(f(h1(),h2()), t1().zipWith(t2())(f))
+//			case (Empty, Cons(h2, t2)) => Empty
+//			case (Cons(h1, t1), Empty) => Empty
+//			case (Empty, Empty) => Empty
+//		}
+//		Empty
+//	}
+
+	def zipAll[B](s2: Stream[B]): Stream[(Option[A],Option[B])] =
+		zipWithAll(s2)((_, _))
 
 	//def zipAll[B, C](b: Stream[B])(f: (A, B) => C): Stream[C] = {
 	/*
@@ -315,17 +317,137 @@ trait Stream[+A] { self =>
 		how you could implement hasSubsequence by combining some other
 		functions we have already written?
 	*/
-	def hasSubsequence[B >: A](b: Stream[B]): Boolean = {
-
-		false
+	// Stream(1, 2, 3, 4, Empty) --> Stream(1, 2, 3, Empty) -->Stream(2, 3, Empty)
+	def hasSubsequence[B >: A](b: Stream[B]): Boolean = tails.exists(_.startsWith(b))
+	/*
+  		`s startsWith s2` when corresponding elements of `s` and `s2` are all equal, until the point that `s2` is exhausted. If `s` is exhausted first, or we find an element that doesn't match, we terminate early. Using non-strictness, we can compose these three separate logical steps--
+  		the zipping, the termination when the second stream is exhausted, and the termination if a nonmatching element is found or the first stream is exhausted.
+  	*/
+	//  Note: any two values, , and ,x y can be compared for equality in Scala using the expression .
+	def startsWith[A](s2: Stream[A]): Boolean = {
+		// Stream(1,2,3, Empty) -- Stream(1, 2, Empty)
+		// Stream((Some(1), Some(1)), (Some(2), Some(2), (Some(3), None))
+		zipAll(s2).takeWhile3(!_._2.isEmpty).forAll {
+			case (h1, h2) => h1 == h2
+		}
 	}
 
+	/*
+		EXERCISE 14: implement tails using unfold. For a given Stream,
+		tails returns the of suffixes of the input sequence, starting with the
+		original Stream. So, given Stream(1,2,3) , it would return
+		Stream(Stream(1,2,3), Stream(2,3), Stream(3), Stream.empty) .
+	*/
+	def tails: Stream[Stream[A]] =
+		unfold(self)(s =>
+			if (s.isEmpty) None // don't forget to add the switch
+			else Some(s, s.tail)
+		)
+
+	def ===[B >: A](b: Stream[B]): Boolean = {
+		// 1 2   zip 1 2  3
+		// (Some(1), Some(1)) (Some(2), Some(2)) (None, Some(3))
+		// (Some(1), Some(1)) (Some(2), Some(2))
+		val zipped = zipAll(b)
+		if (zipped.exists(r => r._1.isEmpty ||  r._2.isEmpty)) false
+		else zipped.forAll {
+			case (h1, h2) => h1 == h2
+		}
+	}
+
+
+	/*
+		EXERCISE 15 (hard, optional): Generalize tails to the function
+		scanRight, which is like a foldRight that returns a stream of the
+		intermediate results. For example:
+
+		Stream(1,2,3).scanRight(0)(_ + _).toList
+
+		List(1+2+3+0, 2+3+0, 3+0, 0)
+	*/
+	def scanRight[B](z: => B)(f: (A, => B) => B): Stream[B] = {
+		var these = self
+		var buffer =  ListBuffer[B]()
+		while(!these.isEmpty) {
+			buffer +=  these.foldRight(z)(f)
+			these = these.tail
+		}
+		buffer += z
+		Stream(buffer: _*)
+	}
+
+
+	def unfold3[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] = {
+		f(z) match {
+			case Some((a, s)) => cons(a, unfold3(s)(f))  // Some之中就是处理原来的逻辑 只不过将其抽象化了
+			case _ => Empty
+		}
+	}
+
+	/*
+  	The function can't be implemented using `unfold`, since `unfold` generates elements of the `Stream` from left to right.
+  	It can be implemented using `foldRight` though.
+
+  	The implementation is just a `foldRight` that keeps the accumulated value and the stream of intermediate results,
+  	which we `cons` onto during each iteration. When writing folds, it's common to have more state in the fold than is needed to compute the result. Here, we simply extract the accumulated list once finished.
+
+  	// p0 is passed by-name and used in by-name args in f and cons. So use lazy val to ensure only one evaluation...
+  */
+	def scanRightViaUnfold[B](z: => B)(f: (A, => B) => B): Stream[B] = {
+		// z 无法很好的放到最后面去
+		unfold(self)(s => {
+			if (s.isEmpty) None
+			else Some(s.foldRight(z)(f), s.tail)
+		})
+	}
+
+	def scanRightViaFoldRight[B](z: => B)(f: (A, => B) => B): Stream[B] = {
+		//def foldRight[B](b: => B)(f: (A, => B) => B):B= {
+		// List(1)
+		// List(1+2+3+0, 2+3+0, 3+0, 0)
+		// (3, (0, Stream(0))
+		foldRight(z -> Stream(z))( (a, b) => {
+			lazy val po = b._1
+			println(" a:  " + a + " p0 " + po)
+			val r = f(a, po)
+			(r, cons(r  ,b._2))
+		})._2
+
+		// Stream(1, 2, 3)
+		/*
+			A(1, Stream(2,3).foldRight(z)(A))
+				A(1, A(2, Stream(3).foldRight(z)(A)))
+					A(1, A(2, Stream(3).foldRight(z)(A)))
+						A(1, A(2, A(3, Empty.foldRight(z)(A)))
+							A(1, A(2, A(3, b))
+							A(1, A(2, r1))
+							A(1, r2)
+							r3
+		*/
+
+		/*
+			Stream(1,2,3)
+			 a:  3 p0 0
+			 a:  2 p0 3
+			 a:  1 p0 5
+			 a:  3 p0 0
+			 a:  2 p0 3
+			 a:  3 p0 0
+		 */
+	}
+
+	def foldRight11[B](b: => B)(f: (A, => B) => B):B= {
+		self match {
+			case Empty => b
+			case Cons(hd, tl) => f(hd(),  tl().foldRight(b)(f)) // f(hd(), Empty)
+		}
+	}
 }
+
 
 object Stream {
 
 	def empty = Empty
-
 	// 1 Empty
 	def cons[A](hd: => A, tl: => Stream[A]): Stream[A] = {
 		// lazy val head = hd

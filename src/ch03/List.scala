@@ -269,6 +269,7 @@ object List {
 	// def hasSubsequence
 
 	def startsWith[A](l: List[A], prefix: List[A]): Boolean = {
+		// all of elments of prefix have been tranversed !!
 		(l , prefix)  match {
 			case (_, Nil) => true
 			case (Cons(h1, t1), Cons(h2, t2)) if (h1 == h2) => startsWith(t1, t2)
@@ -294,10 +295,10 @@ object List {
 		}
 	}
 
-	def exists[A](l: List[A])(predicate: A => Boolean): Boolean = {
+	def exists[A](l: List[A])(p: A => Boolean): Boolean = {
 		var these = l
 		while(!isEmpty(these)) {
-			if (predicate(head(these))) {
+			if (p(head(these))) {
 				return true
 			}
 			these = tail(these)

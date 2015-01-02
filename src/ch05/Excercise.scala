@@ -5,26 +5,26 @@ package ch05
  */
 object Excercise extends App {
 	val stream = Stream(1, 2, 3, 4, 10)
-	val stream2 = Stream(2, 3, 4, 5)
-//	println(stream.toList1)
+	val stream2 = Stream(1, 2, 3)
+	println(stream.toList1)
 	println(" take " + stream.take(3).toList)
 	println(" takeViaFold " + stream.takeViaFold(3).toList)
-//	println(" takeWhile2 " + stream.takeWhile2(_ > 2).toList)
-//	println(" takeWhile3 " + stream.takeWhile3(_ > 2).toList)
-//	println(" exists " + stream.exists(_ % 14 == 0))
-//	println(" takeWhile " + stream.takeWhile(_ > 2).toList)
-//	println(" head " + stream.head)
-//	println(" tail " + stream.tail.toList)
-//	println(" forAll " + stream.forAll(_ >= 1))
-//
+	println(" takeWhile2 " + stream.takeWhile2(_ > 2).toList)
+	println(" takeWhile3 " + stream.takeWhile3(_ > 2).toList)
+	println(" exists " + stream.exists(_ % 14 == 0))
+	println(" takeWhile " + stream.takeWhile(_ > 2).toList)
+	println(" head " + stream.head)
+	println(" tail " + stream.tail.toList)
+	println(" forAll " + stream.forAll(_ >= 1))
+
 	println(" map " + stream.map(_ * 3).toList)
-//	println(" append " + stream.appendOne(100).toList)
-//	println(" flatMap " + stream.flatMap(c => Stream((c to 5).toList: _*)).toList)
+	println(" append " + stream.appendOne(100).toList)
+	println(" flatMap " + stream.flatMap(c => Stream((c to 5).toList: _*)).toList)
 
 	// The execution logic
-	// println(" map executed !!! ")
-	// println(" filter executed")
-	// 交替执行　这样的话针对某些情况 就只需要map一部分 find
+	println(" map executed !!! ")
+	println(" filter executed")
+	//交替执行　这样的话针对某些情况 就只需要map一部分 find
 	println(stream.map(_ + 10)) // Stream(1, ?).filter(_ > 2)
 	println(" mapViaFold " + stream.mapViaFold(_ + 2).toList)
 
@@ -49,6 +49,18 @@ object Excercise extends App {
 			}
 		}
 	).toList)
+
+	println(" startsWith " + stream.startsWith(Stream(1, 2, 3, 4, 10, 11, 12)))
+	println(" tails " + stream.tails.map(_.toList).toList)
+	println(" hasSubsequence " + stream.hasSubsequence(Empty))
+	println(" Stream Equals " + stream == Stream(1, 2, 3, 4, 10))
+	println(" === " + stream.===(Stream(1, 2, 3, 4, 10)) ) // 为什么stream === Stream..
+
+	println(" scanRight " + Stream(1, 2, 3).scanRight(0)(_ + _).toList)
+
+	println(" scanRightViaUnfold " + Stream(1,2,3).scanRightViaUnfold(0)(_ + _).toList)
+	println(" scanRightViaFoldRight " + Stream(1,2,3).scanRightViaFoldRight(0)(_ + _).toList)
+
 }
 
 
