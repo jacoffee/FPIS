@@ -401,20 +401,82 @@ trait Stream[+A] { self =>
 		})
 	}
 
-	def scanRightViaFoldRight[B](z: => B)(f: (A, => B) => B): Stream[B] = {
+	def scanRightViaFoldRight[B](z: => B)(rightF: (A, => B) => B): Stream[B] = {
 		//def foldRight[B](b: => B)(f: (A, => B) => B):B= {
 		// List(1)
 		// List(1+2+3+0, 2+3+0, 3+0, 0)
 		// (3, (0, Stream(0))
 		foldRight(z -> Stream(z))( (a, b) => {
-			lazy val po = b
-			//println(" a: "+ a + " p0 " + b._1)
-			val r = f(a,  po._1)
-			(r, cons(r, po._2))
+			//lazy val po = b
+			println(" a: "+ a + " p0 " + b._1)
+			val r = rightF(a,  b._1)
+			(r, cons(r, b._2))
 		})._2
 
 		// Stream(1, 2, 3)
 		/*
+			Stream(1, 2)
+
+			foldRight(0-> Stream(0))(f)
+			Empty.foldRight(0-> Stream(0))(f)
+
+			step4
+			f(
+				1, {
+					f(
+						2,  0-> Stream(0)   ====>
+					)
+				}
+			)
+
+			step5
+			f(
+				1,
+				{
+					println(" a: "+ 2 + " p0 " + 0)
+					val r = rightF(2, 0)
+					(r, cons(r,  Stream(0)))
+				}
+			)
+
+			step6
+
+			println(" a: "+ 1 + " p0 " + {
+					(
+						println(" a: "+ 2 + " p0 " + {
+							println(" a: "+ 3 + " p0 " + 0)
+							val r = rightF(3, 0)
+							(r, cons(r, Stream(0)))
+						}
+					)
+				}._1),
+			(
+				println(" a: "+ 1 + " p0 " + {
+					println(" a: "+ 2 + " p0 " + 0)
+					val r = rightF(2, 0)
+					(r, cons(r, Stream(0)))
+				}._1),
+				val r = rightF(1, {
+					println(" a: "+ 2 + " p0 " + 0)
+					val r = rightF(2, 0)
+					(r, cons(r, Stream(0)))
+				}._1
+				(r, cons(r, {
+					println(" a: "+ 2 + " p0 " + 0)
+					val r = rightF(2, 0)
+					(r, cons(r, Stream(0)))
+				}._2))
+			)._2
+
+
+			取出tuple的值时候, 所有的值都会同步计算
+			val tupleTest = ({println("number1 "); 1}, {println("number2"); 3})
+				println(" tupleTest " + tupleTest._2)
+				/*
+					number1
+					number2
+					tupleTest 3
+				*/
 			A(1, Stream(2,3).foldRight(z)(A))
 				A(1, A(2, Stream(3).foldRight(z)(A)))
 					A(1, A(2, A(3, Empty.foldRight(z)(A)))

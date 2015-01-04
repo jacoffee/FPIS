@@ -58,9 +58,7 @@ object Excercise extends App {
 
 	println(" scanRight " + Stream(1, 2, 3).scanRight(0)(_ + _).toList)
 
-	println(" scanRightViaUnfold " + Stream(1,2,3).scanRightViaUnfold(0)(_ + _).toList)
-
-	println(" scanRightViaFoldRight " + Stream(1,2,3).scanRightViaFoldRight(0)(_ + _).toList)
+	println(" scanRightViaFoldRight " + Stream(1, 2, 3).scanRightViaFoldRight(0)(_ + _).toList)
 }
 
 
