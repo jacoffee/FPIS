@@ -407,12 +407,16 @@ trait Stream[+A] { self =>
 		// List(1+2+3+0, 2+3+0, 3+0, 0)
 		// (3, (0, Stream(0))
 		foldRight(z -> Stream(z))( (a, b) => {
-			//lazy val po = b
-			println(" a: "+ a + " p0 " + b._1)
+			// println(" a: "+ a + " p0 " + b._1)
 			val r = rightF(a,  b._1)
 			(r, cons(r, b._2))
 		})._2
 
+		foldRight(z -> Stream(z))( (a, b) => {
+			lazy val po = b
+			val r = rightF(a,  po._1)
+			(r, cons(r, po._2))
+		})._2
 		// Stream(1, 2, 3)
 		/*
 			Stream(1, 2)
