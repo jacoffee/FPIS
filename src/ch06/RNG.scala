@@ -109,4 +109,86 @@ object RNG {
 		}
 		go(count, Nil, rng)
 	}
+
+
+	// --------------------------
+	// RNG => (A, RNG)  -->  avoid pass RNG as parameter
+	type Rand[+A] = RNG => (A, RNG)
+
+	def unit[A](a: A): Rand[A] = rng => (a, rng)
+
+	def map[A, B](random: Rand[A])(f: A => B): Rand[B] = {
+		rng => {
+			val (a, rng2) = random(rng)
+			(f(a), rng2)
+		}
+	}
+
+	/* EXERCISE 5: Use to map generate an Int between 0 and  n , inclusive: */
+	// println(" positiveInt " + RNG.positiveInt(4)(init._2)._1)
+	// the invocation is awakward
+	def positiveInt(n: Int): Rand[Int] = {
+		map(unit(n)) {
+			a => scala.util.Random.nextInt(a)
+		}
+	}
+
+	/* EXERCISE 6: Use to map reimplement RNG.double in a more elegant way. */
+	val _double: Rand[Double] = map(nonNegativeInt) {
+		_ .toFloat / Int.MaxValue
+	}
+
+	/*
+		EXERCISE 7 Write its implementation and then use it to reimplement the intDouble
+		and doubleInt functions.
+
+		combinator
+	*/
+	def map2[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] = {
+		rng => {
+			val (a1, r1) = ra(rng)
+			val (b1, r2) = rb(rng)
+			(f(a1, b1), r2)
+		}
+	}
+
+	def intDoubleViaMap2 = map2(nonNegativeInt, double)((_, _))
+
+	def triple(rng: RNG): (Int, RNG) = {
+		val (n, r) = rng.nextInt
+		(n * 3, r)
+	}
+	/*
+		EXERCISE 8 (hard): If we can combine two RNG transitions, we should be
+		able to combine a whole list of them. Implement , sequence for combining a
+		List of transitions into a single transition.
+
+		实现总结
+		List[Rand[A]] --> 会将调用者传入的rng 依次丢进去, 然后调用
+		val (a1, r1) = ra(rng)
+		val (b1, r2) = rb(rng)
+	*/
+	def sequence[A](fs: List[Rand[A]]): Rand[List[A]] = {
+		rng => {
+			val l =  fs.map(_(rng))
+			if (l.isEmpty) (Nil, rng)
+			else (l.map(_._1), l.last._2)
+		}
+	}
+
+	// 下面的流程通过foldRight的方式来积累原始值
+	def _sequence[A](fs: List[Rand[A]]): Rand[List[A]] =
+		fs.foldRight(unit(List[A]()))((f, acc) => map2(f, acc)(_ :: _))
+
+	def _ints(count: Int): Rand[List[Int]] = {
+		val rand: Rand[Int] = _.nextInt
+		sequence(List.fill(count)(rand))
+	}
+
+	def intsViaSequence(count: Int)(rng: RNG) : (List[Int], RNG) = {
+		val (n, r) = rng.nextInt
+		val rand: Rand[Int] = _.nextInt
+		sequence(List.fill(count)(rand))(r)
+	}
+
 }
