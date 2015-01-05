@@ -185,10 +185,26 @@ object RNG {
 		sequence(List.fill(count)(rand))
 	}
 
+	val rand: Rand[Int] = _.nextInt
 	def intsViaSequence(count: Int)(rng: RNG) : (List[Int], RNG) = {
 		val (n, r) = rng.nextInt
-		val rand: Rand[Int] = _.nextInt
 		sequence(List.fill(count)(rand))(r)
 	}
 
+	/* EXERCISE 9: Implement flatmap, then use it to reimplement positiveInt. */
+	def flatMap[A,B](f: Rand[A])(g: A => Rand[B]): Rand[B] = {
+		rng => {
+			val (n, r) = f(rng)
+			g(n)(r)
+		}
+	}
+
+	def positiveIntViaFlatMap: Rand[Int] =
+		flatMap(rand) { i =>
+			if (i != Int.MinValue) unit(i.abs)
+			else {
+				// We want to retry the generator in the case of Int.MinValue, but we don't actually have an RNG
+				rand
+			}
+		}
 }

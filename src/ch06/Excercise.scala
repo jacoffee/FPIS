@@ -12,6 +12,9 @@ object Excercise extends App {
 
 	println(" positiveInt " + RNG.positiveInt(init._2)._1)
 
+	println(" positiveIntViaFlatMap " + RNG.positiveIntViaFlatMap(init._2)._1)
+	println(" nonNegativeInt " + RNG.nonNegativeInt(init._2)._1)
+
 	println(" double " + RNG.double(init._2)._1)
 
 	println(" intDouble " + RNG.intDouble(init._2)._1)
