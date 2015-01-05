@@ -9,5 +9,11 @@ object Excercise extends App {
 	// the upper is the same --> transparency referential
 
 
-	println(" positiveInt " + RNG.positiveInt(RNG.simple(-10).nextInt._2)._1)
+	println(" positiveInt " + RNG.positiveInt(RNG.simple(0).nextInt._2)._1)
+
+	println(" double " + RNG.double(RNG.simple(1).nextInt._2)._1)
+
+	println(" intDouble " + RNG.intDouble(RNG.simple(1).nextInt._2)._1)
+
+	println(" ints " + RNG.ints(3)(RNG.simple(3).nextInt._2)._1)
 }
