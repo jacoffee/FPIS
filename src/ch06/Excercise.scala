@@ -15,5 +15,5 @@ object Excercise extends App {
 
 	println(" intDouble " + RNG.intDouble(RNG.simple(1).nextInt._2)._1)
 
-	println(" ints " + RNG.ints(3)(RNG.simple(3).nextInt._2)._1)
+	println(" ints " + RNG.ints(4)(RNG.simple(3).nextInt._2)._1)
 }

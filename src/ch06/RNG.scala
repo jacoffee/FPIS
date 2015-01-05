@@ -101,9 +101,11 @@ object RNG {
 	/* EXERCISE 4: Write a function to generate a list of random integers. */
 	def ints(count: Int)(rng: RNG): (List[Int], RNG) = {
 		@tailrec def go(count: Int, acc: List[Int], rng: RNG): (List[Int], RNG) = {
-			val (n, r) = rng.nextInt
 			if (count == 0) (acc, rng)
-			else go(count -1, n :: acc, r.nextInt._2)
+			else {
+				val (n, r2) = rng.nextInt
+				go(count - 1, n :: acc, r2)
+			}
 		}
 		go(count, Nil, rng)
 	}
