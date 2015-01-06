@@ -33,4 +33,9 @@ object Excercise extends App {
 	println(" intsViaSequence " + RNG.intsViaSequence(3)(init._2)._1)
 
 	println(" _ints " + RNG._ints(3)(init._2)._1)
+
+	println(" positiveIntViaFlatMap " + RNG.positiveIntViaFlatMap(init._2)._1)
+
+	println(" map2 " + RNG.map2(RNG.triple, RNG.quadruple)(_ + _)(init._2)._1)
+	println(" map2ViaFlatMap " + RNG.map2ViaFlatMap(RNG.triple, RNG.quadruple)(_ + _)(init._2)._1)
 }

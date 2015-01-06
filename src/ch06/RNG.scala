@@ -147,7 +147,7 @@ object RNG {
 	def map2[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] = {
 		rng => {
 			val (a1, r1) = ra(rng)
-			val (b1, r2) = rb(rng)
+			val (b1, r2) = rb(r1)
 			(f(a1, b1), r2)
 		}
 	}
@@ -156,7 +156,14 @@ object RNG {
 
 	def triple(rng: RNG): (Int, RNG) = {
 		val (n, r) = rng.nextInt
+		println(" triple n " + n)
 		(n * 3, r)
+	}
+
+	def quadruple(rng: RNG): (Int, RNG) = {
+		val (n, r) = rng.nextInt
+		println(" quadruple n " + n)
+		(n * 4, r)
 	}
 	/*
 		EXERCISE 8 (hard): If we can combine two RNG transitions, we should be
@@ -207,4 +214,27 @@ object RNG {
 				rand
 			}
 		}
+
+
+	/* EXERCISE 10: Reimplement .map and map2  in terms of flatMap */
+	def mapViaFlatMap[A, B](s: Rand[A])(f: A => B): Rand[B] = flatMap(s) { a => unit(f(a)) }
+	def map2ViaFlatMap[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] = {
+		flatMap(ra) { a =>
+			flatMap(rb) { b =>
+				unit(f(a, b))
+			}
+		}
+
+		/*
+			rng => {
+				val (n, r) =  ra(rng)
+				// g(n)(r)
+				(
+					flatMap(rb) { b=>
+						unit(f(n, b))
+					}
+				)(r)
+			}
+		*/
+	}
 }
