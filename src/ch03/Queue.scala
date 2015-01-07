@@ -87,7 +87,7 @@ object MyQueue {
 	}
 }
 
-class Cell[T](init: T) {
+class Cell[+T](init: T) {
 	private[this] var current = init
 	def get = init
 	def set(t: T): Unit = {
@@ -117,9 +117,9 @@ object Test extends App {
 	}
 
 	val c1 = new Cell[String] ("abc")
-//	val c2: Cell[Any] = c1
-//	c2.set(1)
-//	val s: String = c1.get
+	val c2: Cell[Any] = c1
+	c2.set(1)  // c1.set(1)
+//	val s: String = c1.get  // 将int 赋值给了String which clearly violates the type soundness
 
 }
 
