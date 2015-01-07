@@ -87,7 +87,7 @@ object MyQueue {
 	}
 }
 
-class Cell[+T](init: T) {
+class Cell[T](init: T) {
 	private[this] var current = init
 	def get = init
 	def set(t: T): Unit = {
