@@ -61,4 +61,7 @@ case class State[S, +A](run: S => (A, S)) {
 			(f(v1, v2), s3)
 		}
 	}
+
+	def get = run
+	def set[B](f: State[S, A] => State[S, B]) = f(get)
 }
