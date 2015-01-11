@@ -65,7 +65,7 @@ case class State[S, +A](run: S => (A, S)) {
 	//State.run 就是get State() 调用的就是Set 方法
 }
 
-object State {
-	def get[S]: State[S, S] = State(s => (s, s))
-	def set[S](s: S): State[S, Unit] = State(_ => ((), s))
-}
+//object State {
+//	def get[S]: State[S, S] = State(s => (s, s))
+//	def set[S](s: S): State[S, Unit] = State(_ => ((), s))
+//}
