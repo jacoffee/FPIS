@@ -38,3 +38,8 @@ object CoVariance extends App {
 	makeDogSpeak(new Container(new Student))
 	makeDogSpeak(new Container(new SuperStudent))
 }
+
+
+abstract class Transformer[T, R] extends (T => R) {
+	def apply(v1: T): R
+}
