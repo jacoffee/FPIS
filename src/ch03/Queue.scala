@@ -95,6 +95,10 @@ class Cell[T](init: T) {
 	}
 }
 
+abstract class Cell2[T](var init: T) {
+	var fst: T
+}
+
 
 object Test extends App {
 	def doesNotCompile(q: MyQueue[AnyRef]) = {} // class Queue takes type parameters
@@ -102,8 +106,6 @@ object Test extends App {
 	//class Fruit {}
 	class Apple(val name: String)
 	class Orange(val name: String)
-
-	//def cotra(q: MyQueue[Apple]) = {}
 
 	val stringQueue = MyQueue("nihao", "enqueue", "fast killing")
 	doesNotCompile(stringQueue)
