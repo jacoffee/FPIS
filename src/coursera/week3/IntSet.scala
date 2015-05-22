@@ -1,8 +1,17 @@
 package coursera.week3
 
-/**
- * Created by allen on 3/22/15.
- */
+/*
+    algebraic data type A type defined by providing several alternatives, each of which comes with its own constructor.
+    It usually comes with a way to decompose the type through pattern matching.
+    The concept is found in specification languages and functional programming languages. Algebraic data types can be emulated in Scala with case classes.
+
+    代数类型提供了几种可能性 -> 每个数据结构都有自己的构造器  Empty | NonEmpty
+
+    它一般是用在模式匹配中用于解构数据类型的(一般是抽象父类 或是 特质)
+
+    在Scala中代数数据结构一般是通过case class来模拟
+
+*/
 sealed abstract class IntSet {
 	def contains(x: Int): Boolean
 
@@ -15,7 +24,7 @@ sealed abstract class IntSet {
 		A
 	B       C
   D   E   F   G
-
+RC
 */
 case object Empty extends IntSet {
 	def contains(x: Int): Boolean = false

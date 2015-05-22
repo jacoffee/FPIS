@@ -1,27 +1,43 @@
 package ch07
 
+import scala.concurrent.{ Await, future }
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration._
+
 /**
  * Created by allen on 1/17/15.
  */
 
 
 /*
-  preface
-
-
+	sequential computing - blocking
+	parallelized
 */
 trait Par[+A] {
 	def unit[A](a: => A): Par[A] // 生成并行运算
+
 	def get[A](a: Par[A]): A // 执行并行运算并收集返回值
-	def sum(seq: IndexedSeq[Int]): Int = {
+
+	def sum(seq: Seq[Int]): Int = {
 		if (seq.size <= 1) seq.headOption getOrElse 0
 		else {
 			val (l, r) = seq.splitAt(seq.size / 2)
+
 			sum(l) + sum(r)
 		}
 	}
 
-	def sumViaPar(seq: IndexedSeq[Int]): Int = {
+	def sumByFuture(seq: Seq[Int]): Int = {
+		if (seq.size <= 1) seq.headOption getOrElse 0
+		else {
+			val (l, r) = seq.splitAt(seq.size / 2)
+
+			Await.result(future(sum(l)), 5 second) +
+			Await.result(future(sum(r)), 5 second)
+		}
+	}
+
+	def sumViaPar(seq: Seq[Int]): Int = {
 		if (seq.size <= 1) seq.headOption getOrElse 0
 		else {
 			val (l, r) = seq.splitAt(seq.size / 2)
