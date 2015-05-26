@@ -3,6 +3,7 @@ package ch07
 import java.util.concurrent.{ ForkJoinPool, ExecutorService }
 
 import scala.collection.mutable.ListBuffer
+import scala.concurrent.Await
 
 // compatiable with Future -- unitFuture
 import java.util.concurrent._
@@ -40,7 +41,11 @@ object Par {
 	def unit[A](a: A): Par[A] = (ex: ExecutorService) => UnitFuture(a)
 	def async[A](a: => A): Par[A] = fork(unit(a))
 
-	// 当你想到看到map2的时候，你就可以顺带的想象，我能否对一个并行计算进行进一步的操作，就像对Future进行mapTo操作
+
+	/*
+		We could of course run the Par, sort the resulting list, and re-package it in a Par with unit. But we want to avoid calling run
+		这个地方跟我开始做sequence的时候心态是一样的，计算Par[List[Int]] 抽取出 List[Int], sort 然后再使用unit进行封装
+	*/
 	def sortPar(l: Par[List[Int]]): Par[List[Int]] =
 		map2(l, unit(()))((a, _) => a.sorted) // (A, B) 实际上是从平行计算里面取出来的结果，所以不需要进一步的5
 
@@ -61,6 +66,7 @@ object Par {
 		map(product(a, b))(x => f(x._1, x._2))
 
 	// on the other hand, i didn't realize that fork actually means spawning off a new thread to do something
+	// just like the original method new Thread start
 	def fork[A](a: => Par[A]): Par[A] = {
 		es => es.submit(new Callable[A] {
 			def call(): A = a(es).get
@@ -68,9 +74,13 @@ object Par {
 	}
 
 	/*
-		我们一般对collection进行map处理的时候都会 sequential process 但是
-		要想进行并且运行 我们需要在每一个运算的起一个并行运算
-		在本例中就是 f: A => B convert to f: A => Par[B]
+		普通的map的操作会对每一个元素调用函数，如果是很容易就完成的函数，那么新开一个线程去做没有很大的意思
+		但是如果是个比较费时的操作，那么这种操作就会非常有意义
+		首先，它避免了blocking 因为
+		sequential computation requires the completion of previous operation which may get stuck
+		其次，加速了整个过程，同时进行多项复杂的运算
+
+		Summing integers is in practice probably so fast that parallelization imposes mroe overhead that is saves
 	*/
 	def asyncF[A, B](f: A => B): A => Par[B] = (a: A) => async(f(a))
 
@@ -117,10 +127,38 @@ object Par {
 
 		map(sequence(lpl))(_.flatten)
 	}
+
+	/*
+		Write a function that takes a list of paragraphs (a List[String]), and returns the total number of words across all paragraphs, in parallel.
+		Generalize this function as much as possible
+
+		Implement map3, map4, and map5, in terms of map2.
+	*/
+	def map3[A,B,C,D](a: Par[A], b: Par[B], c: Par[C])(f: (A, B, C) => D): Par[D] = {
+		// def map2[A,B,C](a: Par[A], b: Par[B])(f: (A,B) => C): Par[C] =
+		???
+	}
+
+	def getWordCount(l: List[String]) = {
+		map(parMap(l)(_.split("\\s+").size))(_.sum)
+	}
+
+	val result = run(getWordCount(List("abc edf", "ghy iju lki"))).get
+
+	map(unit(1))(_ + 1) == unit(2)
+
+	/*
+		how to judge that two pars are the same if
+		given same executor service, they return results in the same value
+	*/
+	def equals[A](p1: Par[A], p2: Par[A])(implicit ex: ExecutorService) = {
+		p1(ex).get == p2(ex).get
+	}
+
+	def id[A](a: A): A = a
 }
 
-
-trait Par[+A] {
+trait Par1[+A] {
 	// injects a constant into a parallel computation
 	def unit[A](a: A): Par[A]
 
@@ -192,12 +230,6 @@ trait Par[+A] {
 		*/
 	}
 
-
-	/*
-		Excercise 1
-
-	*/
-
 	def sumViaRealPar(seq: Seq[Int]): Par[Int] = {
 		if (seq.size <= 1) unit(seq.headOption getOrElse 0)
 		else {
@@ -208,6 +240,4 @@ trait Par[+A] {
 		}
 
 	}
-
-	def map2 = ???
 }
