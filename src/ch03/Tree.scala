@@ -15,7 +15,7 @@ object Tree {
 	// Recursivion is really matters when you want to write Collection Operation
 
 	// EXERCISE 25: Write a function size that counts the number of nodes in a tree.
-	def size[A](tree: Tree[A]) = {
+	def sizeByGo[A](tree: Tree[A]) = {
 		var count = 0
 		def go(tree: Tree[A]): Int= {
 			tree match {
@@ -34,7 +34,7 @@ object Tree {
 
 	// Parant
 	// Branch(left, right)
-	def size1[A](tree: Tree[A]): Int = {
+	def size[A](tree: Tree[A]): Int = {
 		tree match {
 			case Leaf(v) => 1
 			case Branch(left, right) => 1 + size(left) + size(right)
@@ -42,7 +42,7 @@ object Tree {
 	}
 
 	// EXERCISE 26: Write a function that maximum returns the maximum element in a Tree[Int]。
-	def maxNum(t: Tree[Int]): Int= {
+	def maxNumByGo(t: Tree[Int]): Int= {
 		import scala.math.max
 		def go(tree: Tree[Int]): Int= {
 			tree match {
@@ -56,10 +56,10 @@ object Tree {
 		go(t)
 	}
 
-	def maxNum1(tree: Tree[Int]): Int= {
+	def maxNum(tree: Tree[Int]): Int= {
 		tree match {
 			case Leaf(v) => max(Int.MinValue, v)
-			case Branch(left, right) => maxNum1(left) max maxNum1(right)
+			case Branch(left, right) => maxNum(left) max maxNum(right)
 		}
 	}
 
