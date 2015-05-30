@@ -14,6 +14,8 @@ trait Parsers[ParseError, Parser[+_]] { self =>
 	/*
 		无论接下来，要如何展开，首先我们要明白Parser的数据结构
 		就像Par[A] = (e: ExecutorService) => Future[A]
+
+		假想结构 type Parser[A] = Regex => A
 	*/
 
 	def char(A: Char): Parser[Char]
@@ -46,7 +48,25 @@ trait Parsers[ParseError, Parser[+_]] { self =>
 	implicit def asStringParser[A](a: A)(implicit f: A => Parser[String]): ParserOp[String] =
 		ParserOp(f(a))
 
+
+	def product[A, B](p1: Parser[A], p2: Parser[B]): Parser[(A, B)]
+
 	case class ParserOp[A](p: Parser[A]) {
 		def ||[B >: A](that: Parser[B]): Parser[B] = self.or(p, that)
+
+		def many[A](that: Parser[A]): Parser[A] = ???
+
+		def map[A, B](that: Parser[A])(f: A => B) = ???
+
+		def **[A, B](p1: Parser[A], p2: Parser[B]): Parser[(A, B)] = product(p1, p2)
+
+		def many1[A](p: Parser[A]): Parser[List[A]] = ???
+
+		// excercise 1
+		def map2[A, B, C](p: Parser[A], p2: Parser[B])(f: (A, B) => C): Parser[C] = {
+			//	f.tupled ((A, B)) => C
+			// 将map2 接口中需要接受两个参数的函数转变成 接受一个参数的 map 接口中的函数
+			map(**(p, p2))(f.tupled)
+		}
 	}
 }
