@@ -9,64 +9,62 @@ import scala.util.Try
 // just like trait Parsers[A, [+_]]
 trait Parsers[ParseError, Parser[+_]] { self =>
 
-	// type ParseError[T] = Try[T]
+  // type ParseError[T] = Try[T]
 
-	/*
-		无论接下来，要如何展开，首先我们要明白Parser的数据结构
-		就像Par[A] = (e: ExecutorService) => Future[A]
+  /*
+    无论接下来，要如何展开，首先我们要明白Parser的数据结构
+    就像Par[A] = (e: ExecutorService) => Future[A]
 
-		假想结构 type Parser[A] = Regex => A
-	*/
+    假想结构 type Parser[A] = Regex => A
+  */
 
-	def char(A: Char): Parser[Char]
+  def char(A: Char): Parser[Char]
 
-	// abra
-	def string(A: String): Parser[String]
+  // abra
+  def string(A: String): Parser[String]
 
-	// abra cadabra
-	def orString(A: String, B: String): Parser[String]
+  // abra cadabra
+  def orString(A: String, B: String): Parser[String]
 
-	// 但是String显然还是比较低得数据结构 继续抽象
-	def orParser(A: Parser[String], B: Parser[String]): Parser[String]
+  // 但是String显然还是比较低得数据结构 继续抽象
+  def orParser(A: Parser[String], B: Parser[String]): Parser[String]
 
-	// 再进一步 类型化
-	def or[A](s1: Parser[A], s2: Parser[A]): Parser[A]
+  // 再进一步 类型化
+  def or[A](s1: Parser[A], s2: Parser[A]): Parser[A]
 
-	/*
-		上面是典型的or 操作 所以马上会想到 自定义 operation
+  /*
+    上面是典型的or 操作 所以马上会想到 自定义 operation
 
-		or => ||
-		and  &&
-	*/
-	def run[A](p: Parser[A])(input: String): Either[ParseError, A]
+    or => ||
+    and  &&
+  */
+  def run[A](p: Parser[A])(input: String): Either[ParseError, A]
 
-	implicit def stringToParser(s: String): Parser[String]
+  implicit def stringToParser(s: String): Parser[String]
 
-	implicit def operators[A](p: Parser[A]) = ParserOp(p)
+  implicit def operators[A](p: Parser[A]) = ParserOp(p)
 
-	// String类型的Op
-	implicit def asStringParser[A](a: A)(implicit f: A => Parser[String]): ParserOp[String] =
-		ParserOp(f(a))
+  // String类型的Op
+  implicit def asStringParser[A](a: A)(implicit f: A => Parser[String]): ParserOp[String] =
+    ParserOp(f(a))
 
 
-	def product[A, B](p1: Parser[A], p2: Parser[B]): Parser[(A, B)]
+  def product[A, B](p1: Parser[A], p2: Parser[B]): Parser[(A, B)]
 
-	case class ParserOp[A](p: Parser[A]) {
-		def ||[B >: A](that: Parser[B]): Parser[B] = self.or(p, that)
+  case class ParserOp[A](p: Parser[A]) {
+    def ||[B >: A](that: Parser[B]): Parser[B] = self.or(p, that)
 
-		def many[A](that: Parser[A]): Parser[A] = ???
+    def many[A](that: Parser[A]): Parser[A] = ???
 
-		def map[A, B](that: Parser[A])(f: A => B) = ???
+    def map[A, B](that: Parser[A])(f: A => B): Parser[B] = ???
+    
+    def flatMap[A, B](that: Parser[A])(f: A => Parser[B]): Parser[B] = ???
 
-		def **[A, B](p1: Parser[A], p2: Parser[B]): Parser[(A, B)] = product(p1, p2)
+    def **[A, B](p1: Parser[A], p2: Parser[B]): Parser[(A, B)] = product(p1, p2)
 
-		def many1[A](p: Parser[A]): Parser[List[A]] = ???
+    def many1[A](p: Parser[A]): Parser[List[A]] = ???
 
-		// excercise 1
-		def map2[A, B, C](p: Parser[A], p2: Parser[B])(f: (A, B) => C): Parser[C] = {
-			//	f.tupled ((A, B)) => C
-			// 将map2 接口中需要接受两个参数的函数转变成 接受一个参数的 map 接口中的函数
-			map(**(p, p2))(f.tupled)
-		}
-	}
+    // excercise 1
+    def map2[A, B, C](pa: Parser[A], pb: Parser[B])(f: (A, B) => C): Parser[C] = ???
+  }
 }

@@ -12,6 +12,9 @@ case class Cons[+A](head: A, tail: List[A]) extends List[A]
 // case class ::[+A](head: A, tail: List[A]) extends List[A]
 
 object List {
+
+  def unit[A](a: => A): List[A] = Cons(a, Nil)
+
 	def size[A](as: List[A]) = {
 		var count = 0
 		var these = as
@@ -254,8 +257,8 @@ object List {
 	}
 
 	// EXERCISE 24 (hard): As an example, implement hasSubsequence for
-	 // checking whether a contains another as a subsequence. For instance,List List
-	 // List(1,2,3,4)  would have List(1,2) List(2,3) List(4)
+	// checking whether a contains another as a subsequence. For instance,List List
+	// List(1,2,3,4)  would have List(1,2) List(2,3) List(4)
 
 
 	// Core Thought

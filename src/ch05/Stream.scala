@@ -513,6 +513,9 @@ trait Stream[+A] { self =>
 object Stream {
 
 	def empty = Empty
+
+	def unit[A](a: => A) = cons(a, empty)
+
 	// 1 Empty
 	def cons[A](hd: => A, tl: => Stream[A]): Stream[A] = {
 		// lazy val head = hd
