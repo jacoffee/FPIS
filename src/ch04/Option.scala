@@ -4,10 +4,6 @@ import java.util.regex.{ PatternSyntaxException, Pattern }
 import ch03.{ List, Cons, Nil }
 import ch03.List.{ exists, foldLeft }
 
-/**
- * Created by allen on 14-12-5.
- */
-
 // Here we are going to place our functions, when possible, inside the body of the Option trait, so they can be called with OO syntax
 // obj.fn(arg1)
 sealed trait Option[+A] {
@@ -118,7 +114,17 @@ object Option {
 
   // def apply
   def unit[A](x: => A) = if (x == null) None else Some(x)
+
   def empty[A]: Option[A] = None
+
+  def map[A, B](oa: Option[A])(f: A => B): Option[B] =
+     oa match {
+       case Some(v) => Some(f(v))
+       case _ => None
+     }
+
+ //  def flatMap[A, B](oa: Option[A])(x: A => Option[B]): Option[B] =
+
 
   /*
     EXERCISE 5: Write a functionsequence , that combines a list of Options

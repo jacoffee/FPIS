@@ -3,13 +3,16 @@ package ch03
 import scala.annotation.tailrec
 import ch04.{ Option, Some, None }
 
-/**
+q/**
  * Created by allen on 14-11-30.
  */
-sealed trait List[+A]
+sealed trait List[+A] {
+	def ::[B >: A] (x: B): List[B] = new ::(x, this)
+}
+
 case object Nil extends List[Nothing]
 case class Cons[+A](head: A, tail: List[A]) extends List[A]
-// case class ::[+A](head: A, tail: List[A]) extends List[A]
+case class ::[+A](head: A, tail: List[A]) extends List[A]
 
 object List {
 
