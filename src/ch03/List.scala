@@ -3,7 +3,7 @@ package ch03
 import scala.annotation.tailrec
 import ch04.{ Option, Some, None }
 
-q/**
+/**
  * Created by allen on 14-11-30.
  */
 sealed trait List[+A] {
@@ -122,6 +122,33 @@ object List {
 		go(as, n)
 	}
 
+
+  // split the list at the N position
+  def splitAt[A](as: List[A], n: Int): (List[A], List[A]) = {
+    // List(1,2,3,4,5)
+    var these = as
+    var h: List[A] = Nil
+    var count = n
+    while (!isEmpty(these) && count > 0) {
+      h = head(these) :: h
+      these = tail(these)
+      count = count - 1
+    }
+
+    (h, these)
+  }
+
+  def take[A](as: List[A], n: Int): List[A] = {
+    var h: List[A] = Nil
+    var these = as
+    var count = n
+    while (!isEmpty(these) && count > 0) {
+       h = head(these) :: h
+       these = tail(these)
+       count = count - 1
+    }
+    h
+  }
 
 	def drop2[A](as: List[A], n: Int): List[A] = {
 		if (n <=0) as

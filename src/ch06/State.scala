@@ -11,9 +11,10 @@ package ch06
  */
 
 case class State[S, +A](run: S => (A, S)) {
-  type State[S, +A] = S => (A, S)
+  // type State[S, +A] = S => (A, S)
 
-  def unit[A](a: A): State[S, A] = x => (a, x)
+  def unit[A](a: A): State[S, A] =
+    State((s: S) => (a, s))
 
   // covariant type A occurs in contravaraint position in type A of value a
   //def map[B](a: A) = ???
@@ -42,28 +43,25 @@ case class State[S, +A](run: S => (A, S)) {
 
 
   def map[B](f: A => B): State[S, B] = {
-    s1 => {
-      val (a1, s2) = run(s1)
-      (f(a1), s2)
-    }
+    State(
+      (s1: S) => {
+        val (a1, s2) = run(s1)
+        (f(a1), s2)
+      }
+    )
   }
 
-  def flatMap[B](g: A => State[S,B]): State[S,B] = {
-    s1 => {
-      val (a1, s2) = run(s1)
-      g(a1)(s2) // State.this.type#State[S, B]
-    }
+  def flatMap[B](g: A => State[S, B]): State[S,B] = {
+      State(
+        (s: S) => {
+          val (a1, s2) = run(s)
+          g(a1).run(s2)
+        }
+      )
   }
 
-  def map2[A, B, C](sa: State[S, A], sb: State[S, B])(f: (A, B) => C): State[S, C] = {
-    s1 => {
-      val (v1, s2) = sa(s1)
-      val (v2, s3) = sb(s2)
-      (f(v1, v2), s3)
-    }
-  }
-
-  //State.run 就是get State() 调用的就是Set 方法
+  def map2[A, B, C](sa: State[S, A], sb: State[S, B])(f: (A, B) => C): State[S, C] =
+      for { a <- sa; b <- sb } yield { f(a, b) }
 }
 
 //object State {

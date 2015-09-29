@@ -9,7 +9,7 @@ object Excercise1 extends App {
 	import ch03.List
 	import ch03.List.{ sum, tail, drop, isEmpty, apply, length, foldRight, sum2, product2 }
 	import ch03.List.{ length2 , reverse, append, append1, foldLeft, foldLeft1, flatten, map, filter, flatMap, filter1, zipWith, hasSubsequence, exists2 }
-	import ch03.List.dropWhile1
+	import ch03.List.{ dropWhile1, splitAt, take }
 
 	val x = List(1,2,3,4,5) match {
 		case Cons(x, Cons(2, Cons(4, _))) => x
@@ -25,7 +25,7 @@ object Excercise1 extends App {
 	val concatedList = Cons(sampleList, Cons(sampleList1, Nil))
 
 	println(exists2(sampleList)(_ % 2 == 0))
-	println(tail(sampleList))
+	println(" tail " + tail(sampleList))
 	println(drop(Nil, 3))
 	println(length(sampleList))
 	//val stackOverflow = foldRight(apply((1 to 2000000).toList: _*), 0L)(_ + _) // Exception in thread "main" java.lang.StackOverflowError
@@ -53,4 +53,7 @@ object Excercise1 extends App {
 	println(" dropWhile1 " + dropWhile1(sampleList)(_ < 24))
 
 	println(" hasSubsequence1 " + hasSubsequence(sampleList, List(1, 2, 23, 45, 56)))
+
+	println(" splitAt " + splitAt(sampleList, 2))
+  println(" take " + take(Nil, 2))
 }

@@ -51,16 +51,17 @@ trait Monad[M[_]] extends Functor[M] {
       val empty: M[List[A]] = unit(Nil)
 
       List.foldLeft(lma, empty)(
-        {
-          (accM, elemM) => map2(accM, elemM)((acc, elem) => elem :: acc)
-        }
+        (accM, elemM) => map2(accM, elemM)((acc, elem) => elem :: acc)
       )
   }
 
+  def tranverse[A, B](la: List[A])(f: A => M[B]): M[List[B]] = sequence(List.map(la)(f))
 
-  def tranverse[A, B](la: List[A])(f: A => M[B]): M[List[B]]
-
-  def replicateM[A](n: Int, ma: M[A]): M[List[A]]
+  def replicateM[A](n: Int, ma: M[A]): M[List[A]] = {
+    sequence(
+      List.apply(scala.collection.immutable.List.fill(n)(ma): _*)
+    )
+  }
 
 
   // Heinrich Kleisli  function like this A => M[B] is called Kleisli Arrows
@@ -109,16 +110,13 @@ trait Monad[M[_]] extends Functor[M] {
     }
 
   def filterM[A](ms: List[A])(f: A => M[Boolean]): M[List[A]] = {
-    val em: M[List[A]] = unit(Nil)
-    List.foldLeft(ms, em)({
-      (accM, elem) => {
-        flatMap(accM)({ acc =>
-          map(f(elem))({ a =>
-            if (a) elem :: acc else acc
-          })
-        })
-      }
-    })
+    val empty: M[List[A]] = unit(Nil)
+
+    List.foldLeft(ms, empty)(
+      (accM, elem) => map2(accM, f(elem))((acc, bool) =>
+        if (bool) elem :: acc else acc
+      )
+    )
   }
 }
 /*
@@ -150,16 +148,6 @@ object Monad {
         }
       )
     }
-
-    def tranverse[A, B](la: List[A])(f: (A) => Option[B]): Option[List[B]] =
-      sequence(List.map(la)(f))
-
-    def replicateM[A](n: Int, ma: Option[A]): Option[List[A]] = {
-      val zero = List[Option[A]]()
-      sequence (
-        (1 to n).foldLeft(zero)({ (acc, _) => Cons(ma, acc) })
-      )
-    }
   }
 
   // x.flatMap(f).flatMap(g) == x.flatMap(a => f(a).flatMap(g))
@@ -173,28 +161,11 @@ object Monad {
   val listMonad = new Monad[List] {
     def unit[A](a: => A): List[A] = List.unit(a)
     def flatMap[A, B](ma: List[A])(f: (A) => List[B]): List[B] = List.flatMap(ma)(f)
-    def sequence[A](lma: List[List[A]]): List[List[A]] = lma
-
-    def tranverse[A, B](la: List[A])(f: (A) => List[B]): List[List[B]] =
-      sequence(List.map(la)(f))
-
-    def replicateM[A](n: Int, ma: List[A]): List[List[A]] = {
-      val zero = List[List[A]]()
-      (1 to n).foldLeft(zero)({ (acc, _) => Cons(ma, acc) })
-    }
   }
 
   val idMonad = new Monad[Id] {
-
     override def unit[A](a: => A): Id[A] = Id(a)
-
     override def flatMap[A, B](ma: Id[A])(f: (A) => Id[B]): Id[B] = f(ma.value)
-
-    override def replicateM[A](n: Int, ma: Id[A]): Id[List[A]] = ???
-
-    override def sequence[A](lma: List[Id[A]]): Id[List[A]] = ???
-
-    override def tranverse[A, B](la: List[A])(f: (A) => Id[B]): Id[List[B]] = ???
   }
 
   val result = Id("Hello, ").flatMap { a =>
@@ -207,18 +178,18 @@ object Monad {
   val b = " Monad"
   val result1 = a + b // bind value
 
-  type IntState[A] = State[Int, A]
+  type IntState[A] = State[Int, A] // run: Int => (A, Int)
 
   object IntState extends Monad[IntState] {
-    override def unit[A](a: => A): IntState[A] = ???
+    override def unit[A](a: => A): IntState[A] = {
+      State(
+        (i: Int) => (a, i)
+      )
+    }
 
-    override def flatMap[A, B](ma: IntState[A])(f: (A) => IntState[B]): IntState[B] = ???
-
-    override def replicateM[A](n: Int, ma: IntState[A]): IntState[List[A]] = ???
-
-    override def sequence[A](lma: List[IntState[A]]): IntState[List[A]] = ???
-
-    override def tranverse[A, B](la: List[A])(f: (A) => IntState[B]): IntState[List[B]] = ???
+    override def flatMap[A, B](ma:  State[Int, A])(f: A => State[Int, B]): IntState[B] = {
+      ma.flatMap { a => f(a) }
+    }
   }
   // Exercise 2
 
