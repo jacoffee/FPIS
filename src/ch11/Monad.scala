@@ -180,17 +180,22 @@ object Monad {
 
   type IntState[A] = State[Int, A] // run: Int => (A, Int)
 
-  object IntState extends Monad[IntState] {
-    override def unit[A](a: => A): IntState[A] = {
-      State(
-        (i: Int) => (a, i)
-      )
-    }
-
-    override def flatMap[A, B](ma:  State[Int, A])(f: A => State[Int, B]): IntState[B] = {
-      ma.flatMap { a => f(a) }
-    }
+  // type lambda is usually(as my current level tell ) => A type constructor declared inline like this is often called a type lambda in Scala.
+  // object IntStateMonad extends Monad[({ type IntState[A] = State[Int, A] })#IntState]
+  object IntStateMonad extends Monad[({ type IntState[A] = State[Int, A] })#IntState] {
+    def unit[A](a: => A): IntState[A] = State(i => (a, i))
+    def flatMap[A, B](ma: State[Int, A])(f: A => State[Int, B]): IntState[B] = ma flatMap f
   }
-  // Exercise 2
 
+  /*
+     As we can see from this issue, cause State requires two type parameter so initially it is not a perfert candidate for Monad
+     so we have to write StateMonad for each concrete type S in State[S, A] which would be very tedious, thanks to type lambda()
+     we can abstract the case to a new level
+  */
+   def abstractStateMonad[S] = new Monad[({ type lambda[A] = State[S, A] })#lambda] {
+    def unit[A](a: => A): State[S, A] = State(i => (a, i))
+    def flatMap[A, B](ma: State[S, A])(f: (A) => State[S, B]): State[S, B] = ma flatMap f
+  }
+
+   // Then S can be replaced with any valid conrete type: Int, String, ......
 }
