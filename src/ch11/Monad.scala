@@ -16,7 +16,6 @@ import ch06.State
 
     Actually Option[A], Parser[A] push us to generalize the map2 further
 
-
     ||
     ||
     ||
@@ -24,11 +23,11 @@ import ch06.State
     use minial set of combinators in the common types to build the unified operation
 */
 
-// ALL MONADS ARE FUNCTORS, but not the other way around
+// all monads are functors, but not the other way around
 trait Monad[F[_]] extends Functor[F] {
 
+  /// one the minimal set of implementation for Monadic combinator
   def unit[A](a: => A): F[A]
-
   def flatMap[A, B](ma: F[A])(f: A => F[B]): F[B]
 
   def map[A, B](ma: F[A])(f: A => B): F[B] =
@@ -40,7 +39,6 @@ trait Monad[F[_]] extends Functor[F] {
   def factor[A, B](ma: F[A], mb: F[B]): F[(A, B)] =
     map2(ma, mb)((_, _))
 
-  // Explain to yourself what it does.  Real Applicatioon
   def cofactor[A, B](e: Either[F[A], F[B]]): F[Either[A, B]] =
     e match {
       case Left(ma) => map(ma)(Left(_))
