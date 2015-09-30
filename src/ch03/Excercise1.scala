@@ -12,17 +12,17 @@ object Excercise1 extends App {
 	import ch03.List.{ dropWhile1, splitAt, take }
 
 	val x = List(1,2,3,4,5) match {
-		case Cons(x, Cons(2, Cons(4, _))) => x
+		case ::(x, ::(2, ::(4, _))) => x
 		case Nil => 42
-		case Cons(x, Cons(y, Cons(3, Cons(4, _)))) => x + y
-		case Cons(h, t) => h + sum(t)
+		case ::(x, ::(y, ::(3, ::(4, _)))) => x + y
+		case ::(h, t) => h + sum(t)
 		case _ => 101
 	}
 	println(isEmpty(ch03.Nil))
 	println(x)
 	val sampleList = List(1, 2, 23, 45, 56,77)
 	val sampleList1 = List(46, 78, 12, 90)
-	val concatedList = Cons(sampleList, Cons(sampleList1, Nil))
+	val concatedList = ::(sampleList, ::(sampleList1, Nil))
 
 	println(exists2(sampleList)(_ % 2 == 0))
 	println(" tail " + tail(sampleList))
@@ -44,7 +44,7 @@ object Excercise1 extends App {
 	val doubleList = apply(1.0, 2.0, 3.0, 4.0)
 	println(" map double to String" + map(sampleList)(_ .toString))
 	println(" filter " + filter(sampleList)(_ > 50))
-	println( " flatMap " + flatMap(sampleList)(i => Cons(i, Cons(i, Nil))))
+	println( " flatMap " + flatMap(sampleList)(i => ::(i, ::(i, Nil))))
 	println(" flatMap Test  For " + flatMap(sampleList)(i => List((i,i))))
 	println(" filter1 " + filter1(sampleList)(_ > 56))
 	println(" zipWith " + zipWith(sampleList, sampleList1)((_, _)))

@@ -1,6 +1,6 @@
 package ch11
 
-import ch03.{ List, Cons, Nil }
+import ch03.{ List, ::, Nil }
 import ch04.{ Option, Some, None }
 import ch06.State
 
@@ -25,58 +25,58 @@ import ch06.State
 */
 
 // ALL MONADS ARE FUNCTORS, but not the other way around
-trait Monad[M[_]] extends Functor[M] {
+trait Monad[F[_]] extends Functor[F] {
 
-  def unit[A](a: => A): M[A]
+  def unit[A](a: => A): F[A]
 
-  def flatMap[A, B](ma: M[A])(f: A => M[B]): M[B]
+  def flatMap[A, B](ma: F[A])(f: A => F[B]): F[B]
 
-  def map[A, B](ma: M[A])(f: A => B): M[B] =
+  def map[A, B](ma: F[A])(f: A => B): F[B] =
     flatMap(ma)(a => unit(f(a)))
 
-  def map2[A, B, C](ma: M[A], mb: M[B])(f: (A, B) => C): M[C] =
+  def map2[A, B, C](ma: F[A], mb: F[B])(f: (A, B) => C): F[C] =
     flatMap(ma) { a => map(mb) { b => f(a, b) } }
 
-  def factor[A, B](ma: M[A], mb: M[B]): M[(A, B)] =
+  def factor[A, B](ma: F[A], mb: F[B]): F[(A, B)] =
     map2(ma, mb)((_, _))
 
   // Explain to yourself what it does.  Real Applicatioon
-  def cofactor[A, B](e: Either[M[A], M[B]]): M[Either[A, B]] =
+  def cofactor[A, B](e: Either[F[A], F[B]]): F[Either[A, B]] =
     e match {
       case Left(ma) => map(ma)(Left(_))
       case Right(mb) => map(mb)(Right(_))
     }
 
-  def sequence[A](lma: List[M[A]]): M[List[A]] = {
-      val empty: M[List[A]] = unit(Nil)
+  def sequence[A](lma: List[F[A]]): F[List[A]] = {
+      val empty: F[List[A]] = unit(Nil)
 
       List.foldLeft(lma, empty)(
         (accM, elemM) => map2(accM, elemM)((acc, elem) => elem :: acc)
       )
   }
 
-  def tranverse[A, B](la: List[A])(f: A => M[B]): M[List[B]] = sequence(List.map(la)(f))
+  def tranverse[A, B](la: List[A])(f: A => F[B]): F[List[B]] = sequence(List.map(la)(f))
 
-  def replicateM[A](n: Int, ma: M[A]): M[List[A]] = {
+  def replicateM[A](n: Int, ma: F[A]): F[List[A]] = {
     sequence(
       List.apply(scala.collection.immutable.List.fill(n)(ma): _*)
     )
   }
 
 
-  // Heinrich Kleisli  function like this A => M[B] is called Kleisli Arrows
-  def lift[A, B](f: A => B): M[A] => M[B] = map(_)(f)
+  // Heinrich Kleisli  function like this A => F[B] is called Kleisli Arrows
+  def lift[A, B](f: A => B): F[A] => F[B] = map(_)(f)
 
-  def compose[A, B, C](f: A => M[B], g: B => M[C]): A => M[C] = {
-    // A => M[A] A => M[A]
+  def compose[A, B, C](f: A => F[B], g: B => F[C]): A => F[C] = {
+    // A => F[A] A => F[A]
     (a: A) => flatMap(f(a))(g)
   }
 
   // then we can express associative law in a more symmetric way
   // compose(f, g), h == compose(f, compose(g, h))
-  def _flatMap[A, B](ma: M[A])(f: A => M[B]): M[B] = {
-    // type A = Unit => M[A]
-    // type B = A => M[B]
+  def _flatMap[A, B](ma: F[A])(f: A => F[B]): F[B] = {
+    // type A = Unit => F[A]
+    // type B = A => F[B]
 
     compose(
       (_: Unit) => ma, f
@@ -85,8 +85,8 @@ trait Monad[M[_]] extends Functor[M] {
     )
   }
 
-  def identityLaw[A, B](ma: M[A])(f: A => M[B]): Boolean = {
-    val reflex = flatMap(flatMap(ma)(f))((b: B) => unit(b)) // (=> A) => M[A]
+  def identityLaw[A, B](ma: F[A])(f: A => F[B]): Boolean = {
+    val reflex = flatMap(flatMap(ma)(f))((b: B) => unit(b)) // (=> A) => F[A]
     val reflex1 = flatMap(flatMap(ma)((a: A) => unit(a)))(f)
 
     val f1 = (a: A) => flatMap( flatMap(unit(a))(f) )((b: B) => unit(b))
@@ -94,23 +94,23 @@ trait Monad[M[_]] extends Functor[M] {
     f1 == f2
   }
 
-  // def flatMap[A, B](ma: M[A])(f: A => M[B]): M[B]
-  def flatten[A](mma: M[M[A]]): M[A] = {
-    // flatMap[M[A], B](mma)(ma => )
+  // def flatMap[A, B](ma: F[A])(f: A => F[B]): F[B]
+  def flatten[A](mma: F[F[A]]): F[A] = {
+    // flatMap[F[A], B](mma)(ma => )
     flatMap(mma)(ma => ma)
   }
 
-  def flatMapViaJoin[A, B](ma: M[A])(f: A => M[B]): M[B] = flatten(map(ma)(f))
+  def flatMapViaJoin[A, B](ma: F[A])(f: A => F[B]): F[B] = flatten(map(ma)(f))
 
-  def composeViaFlatten[A, B, C](f: A => M[B], g: B => M[C]): A => M[C] =
-  // (a: A) => M[M[C]]
+  def composeViaFlatten[A, B, C](f: A => F[B], g: B => F[C]): A => F[C] =
+  // (a: A) => F[F[C]]
     (a: A) => {
       val mmb = map(unit(a))(f)
       flatten(map(mmb)(mb => flatten(map(mb)(g))))
     }
 
-  def filterM[A](ms: List[A])(f: A => M[Boolean]): M[List[A]] = {
-    val empty: M[List[A]] = unit(Nil)
+  def filterM[A](ms: List[A])(f: A => F[Boolean]): F[List[A]] = {
+    val empty: F[List[A]] = unit(Nil)
 
     List.foldLeft(ms, empty)(
       (accM, elem) => map2(accM, f(elem))((acc, bool) =>
@@ -125,7 +125,6 @@ trait Monad[M[_]] extends Functor[M] {
 case class Id[A](value: A) {
   // Heinrich Kleisli
   def map[B](f: A => B): Id[B] = Id(f(value))
-
   def flatMap[B](f: A => Id[B]): Id[B] = f(value)
 }
 
@@ -142,7 +141,7 @@ object Monad {
       Option.unit(
         List.flatMap(lma) { opt: Option[A] =>
           opt match {
-            case Some(x) => Cons(x, Nil)
+            case Some(x) => ::(x, Nil)
             case None => Nil
           }
         }

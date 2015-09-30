@@ -1,7 +1,7 @@
 package ch04
 
 import java.util.regex.{ PatternSyntaxException, Pattern }
-import ch03.{ List, Cons, Nil }
+import ch03.{ List, ::, Nil }
 import ch03.List.{ exists, foldLeft }
 
 // Here we are going to place our functions, when possible, inside the body of the Option trait, so they can be called with OO syntax
@@ -12,7 +12,7 @@ sealed trait Option[+A] {
   def isEmpty: Boolean
 
   def nonEmpty = !isEmpty
-  def toList[A] = if (isEmpty) Nil else Cons(this.get, Nil)
+  def toList[A] = if (isEmpty) Nil else ::(this.get, Nil)
 
   def map[B](f: A => B): Option[B] = {
     if (isEmpty) None else Some(f(this.get))
@@ -137,7 +137,7 @@ object Option {
     else {
       // def foldLeft[A,B](l: List[A], z: B)(f: (B, A) => B): B = {
       Some(
-        foldLeft(a, Nil: List[A])((b, a) => Cons(a.get, b))
+        foldLeft(a, Nil: List[A])((b, a) => ::(a.get, b))
       )
     }
   }

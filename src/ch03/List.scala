@@ -1,7 +1,6 @@
 package ch03
 
 import scala.annotation.tailrec
-import ch04.{ Option, Some, None }
 
 /**
  * Created by allen on 14-11-30.
@@ -11,12 +10,11 @@ sealed trait List[+A] {
 }
 
 case object Nil extends List[Nothing]
-case class Cons[+A](head: A, tail: List[A]) extends List[A]
 case class ::[+A](head: A, tail: List[A]) extends List[A]
 
 object List {
 
-  def unit[A](a: => A): List[A] = Cons(a, Nil)
+  def unit[A](a: => A): List[A] = ::(a, Nil)
 
 	def size[A](as: List[A]) = {
 		var count = 0
@@ -31,13 +29,13 @@ object List {
 	/* simple and rough implementation of sum and product */
 	def sum(ins: List[Int]): Int = ins match {
 		case Nil => 0
-		case Cons(head, tail) => head  + sum(tail)
+		case ::(head, tail) => head  + sum(tail)
 	}
 
 	def product(ds: List[Double]): Double = ds match {
 		case Nil => 1.0
-		case Cons(0.0, _) => 0.0
-		case Cons(head, tail) => head * product(tail)
+		case ::(0.0, _) => 0.0
+		case ::(head, tail) => head * product(tail)
 	}
 
 	/* high-order implementation */
@@ -54,10 +52,10 @@ object List {
 	def foldRight[A, B](as: List[A], z: B)(f: (A, B) => B): B = {
 		as match {
 			case Nil => z //exit
-			case Cons(head, tail) => f(head, foldRight(tail, z)(f)) // 1 :: Nil -> f(1, foldRight(Nil, 0)f)
+			case ::(head, tail) => f(head, foldRight(tail, z)(f)) // 1 :: Nil -> f(1, foldRight(Nil, 0)f)
 		}
-		// Cons(3 :: Cons(2 :: Nil))
-		// f(3, foldRight(Cons(2 :: Nil), 0)(f))
+		// ::(3 :: ::(2 :: Nil))
+		// f(3, foldRight(::(2 :: Nil), 0)(f))
 		// f(3, f(2, foldRight(Nil, 0)(f)))
 		/// val f = (a: Int, b: Int) => a + b
 		// f(3, f(2,  0))
@@ -73,12 +71,12 @@ object List {
 	def foldLeft[A,B](l: List[A], z: B)(f: (B, A) => B): B = {
 		l match {
 			case Nil => z // f(z, head)
-			case Cons(head, tail) => foldLeft(tail, f(z, head))(f)
+			case ::(head, tail) => foldLeft(tail, f(z, head))(f)
 			// cause writing in this way, the f will be invoked in the last invocation
 			// but  tail has reduced the List to One
-			// Cons(1, Cons(2, Cons(3, Nil)))
-			// foldLeft(Cons(2, Cons(3, Nil)), 0)(_+ _)
-			// foldLeft(Cons(3, Nil), 0)(_+ _)
+			// ::(1, ::(2, ::(3, Nil)))
+			// foldLeft(::(2, ::(3, Nil)), 0)(_+ _)
+			// foldLeft(::(3, Nil), 0)(_+ _)
 		}
 	}
 
@@ -86,28 +84,28 @@ object List {
 	def newProduct(ds: List[Double]) = foldRight(ds, 1.0)(_ + _)
 	// Invocation Trace
 	/*
-		foldRight(Cons(1, Cons(2, Cons(3, Nil))), 0)(_ + _)
-		f(1, foldRight(Cons(2, Cons(3, Nil)), 0)(_ + _)
+		foldRight(::(1, ::(2, ::(3, Nil))), 0)(_ + _)
+		f(1, foldRight(::(2, ::(3, Nil)), 0)(_ + _)
 	*/
 
 	// varargs In Scala
 
 	def apply[A](as: A*): List[A] =
 		if (as.isEmpty) Nil
-		else Cons(as.head, apply(as.tail: _*))
+		else ::(as.head, apply(as.tail: _*))
 
 	// Excersie2 Implement the function for "removing" the first element of a List  what if the List is Empty
 	def tail[A](as: List[A]) = {
 		as match {
 			case Nil =>throw new NoSuchElementException("tail of empty list")
-			case Cons(head, other) => other
+			case ::(head, other) => other
 		}
 	}
 
 	def head[A](as: List[A]) = {
 		as match {
 			case Nil => throw new NoSuchElementException("head of empty list")
-			case Cons(head, other) => head
+			case ::(head, other) => head
 		}
 	}
 
@@ -155,7 +153,7 @@ object List {
 		else {
 			as match {
 				case Nil => Nil
-				case Cons(_, tail) => drop2(tail, n-1) // accumulation and counter change interchangeably
+				case ::(_, tail) => drop2(tail, n-1) // accumulation and counter change interchangeably
 			}
 		}
 	}
@@ -176,7 +174,7 @@ object List {
 	def dropWhile1[A](as:List[A])(p: A => Boolean): List[A] = {
 		as match {
 			case Nil => sys.error("")
-			case Cons(h, t) if (p(h)) => dropWhile1(t)(p)
+			case ::(h, t) if (p(h)) => dropWhile1(t)(p)
 			case _  => as
 		}
 	}
@@ -193,19 +191,19 @@ object List {
 	/* EXERCISE 5: Using the same idea,  implement the function for setHead replacing the first element of a with a different value */
 	def setHead[A](as: List[A], anotherHead: A): List[A] = {
 		if (isEmpty(as)) as
-		else Cons(anotherHead, tail(as))
+		else ::(anotherHead, tail(as))
 	}
 
 	def setHead1[A](as: List[A], anotherHead: A): List[A] = {
 		as match {
 			case Nil => sys.error(" setHead on empty List")
-			case Cons(_, t) => Cons(anotherHead, t)
+			case ::(_, t) => ::(anotherHead, t)
 		}
 	}
 
 	/*
-		EXERCISE 8: See what happens when you pass Nil and Cons themselves to foldRight , like this: foldRight(List(1,2,3), Nil:List[Int])(Cons(_,_)) .
-		What do you think this says about the relationship between foldRight and the data constructors of List ?
+		EXERCISE 8: See what happens when you pass Nil and :: themselves to foldRight , like this: foldRight(List(1,2,3), Nil:List[Int])(::(_,_)) .
+		What do you think this says about the relationship between foldRight and the data ::tructors of List ?
 		1 :: 2:: 3 :: Nil
 		equals to apply method
 	*/
@@ -220,12 +218,12 @@ object List {
 	def length2[A](ins: List[A]): Int = foldLeft(ins, 0)((acc, _) => acc +1)
 
 	// EXERCISE 12: Write a function that returns the reverse of a list. See if you can write it using a fold
-	// Cons(1, Cons(2, Cons(3, Nil)))
-	def reverse[A](ins: List[A]): List[A] = foldLeft(ins, Nil: List[A])((B ,A) => Cons(A, B))
+	// ::(1, ::(2, ::(3, Nil)))
+	def reverse[A](ins: List[A]): List[A] = foldLeft(ins, Nil: List[A])((B ,A) => ::(A, B))
 
 	// EXERCISE 14: Implement append in terms of either foldLeft or foldRight
-	def append[A](ins: List[A], a: A) = reverse(Cons(a, reverse(ins)))
-	def append1[A](ins: List[A], a: A) = foldRight(ins, Cons(a, Nil))((each: A, b: List[A]) => Cons(each, b))
+	def append[A](ins: List[A], a: A) = reverse(::(a, reverse(ins)))
+	def append1[A](ins: List[A], a: A) = foldRight(ins, ::(a, Nil))((each: A, b: List[A]) => ::(each, b))
 
 	// EXERCISE 13 (hard): Can you write foldLeft in terms of foldRight? How about the other way around?
 	// def foldLeft = foldRight
@@ -239,11 +237,11 @@ object List {
 		@tailrec def go[A](acc: List[A], each: List[A]): List[A] = {
 			each match {
 				case Nil => acc
-				case Cons(head, tail) => go(append(acc, head), tail)
+				case ::(head, tail) => go(append(acc, head), tail)
 			}
 		}
 		ins match {
-			case Cons(head, tail) => go(head, flatten(tail))
+			case ::(head, tail) => go(head, flatten(tail))
 			case _ => Nil
 		}
 	}
@@ -252,17 +250,17 @@ object List {
 	// (Reminder: this should be a pure function that returns a new List!)
 	// ****************
 	def map[A,B](l: List[A])(f: A => B): List[B] = {
-		val cc = (a:A, b: B) => Cons(f(a), Nil)
+		val cc = (a:A, b: B) => ::(f(a), Nil)
 		// def foldRight[A, B](as: List[A], z: B)(f: (A, B) => B): B = {
-		// foldRight(List(1,2,3), Nil:List[Int])(Cons(_,_))
-		// foldRight(l, Nil:List[B])((h,t) => Cons(f(h),t))
-		foldRight(l, Nil:List[B]) { (each, acc) => Cons(f(each), acc) } // currying will do automatic type inference, so the each, acc type will be automatically infered
+		// foldRight(List(1,2,3), Nil:List[Int])(::(_,_))
+		// foldRight(l, Nil:List[B])((h,t) => ::(f(h),t))
+		foldRight(l, Nil:List[B]) { (each, acc) => ::(f(each), acc) } // currying will do automatic type inference, so the each, acc type will be automatically infered
 	}
 
 	// EXERCISE 19: Write a function filter that removes elements from a list unless they satisfy a given predicate. Use it to remote all odd numbers from a List[Int]
 	def filter[A](l: List[A])(f: A => Boolean): List[A]= {
 		foldRight(l, Nil:List[A]) { (each, acc) =>
-			if (f(each)) Cons(each, acc) else acc
+			if (f(each)) ::(each, acc) else acc
 		}
 	}
 
@@ -273,16 +271,16 @@ object List {
 	def flatMap[A,B](l: List[A])(f: A => List[B]): List[B] = flatten(map[A, List[B]](l)(f(_)))
 
 	// EXERCISE 21: Can you use flatMap to implement  filter ?
-	def filter1[A](l: List[A])(f: A => Boolean): List[A]= flatMap[A, A](l) { a => { if (f(a)) Cons(a, Nil) else Nil } }
+	def filter1[A](l: List[A])(f: A => Boolean): List[A]= flatMap[A, A](l) { a => { if (f(a)) ::(a, Nil) else Nil } }
 
-	// EXERCISE 22: Write a function that accepts two lists and constructs a new list
+	// EXERCISE 22: Write a function that accepts two lists and ::tructs a new list
 	// by adding corresponding elements. For example, List(1,2,3)  and List(4,5,6) becomes List(5,7,9).
 	// ****************
 	def zipWith[A, B, C](a: List[A], b: List[B])(f: (A, B) => C): List[C] = {
 		(a, b) match {
 			case (Nil, _) => Nil  // exit
 			case (_, Nil) => Nil
-			case (Cons(h, t), Cons(h1, t1)) => Cons(f(h, h1), zipWith(t, t1)(f))
+			case (::(h, t), ::(h1, t1)) => ::(f(h, h1), zipWith(t, t1)(f))
 		}
 	}
 
@@ -305,7 +303,7 @@ object List {
 		// all of elments of prefix have been tranversed !!
 		(l , prefix)  match {
 			case (_, Nil) => true
-			case (Cons(h1, t1), Cons(h2, t2)) if (h1 == h2) => startsWith(t1, t2)
+			case (::(h1, t1), ::(h2, t2)) if (h1 == h2) => startsWith(t1, t2)
 			case _ => false
 		}
 	}
@@ -315,16 +313,16 @@ object List {
 	def hasSubsequence1[A](l: List[A], sub: List[A]): Boolean = {
 		(l, sub) match {
 			case (_, Nil) => true
-			case (Cons(h1, t1), Cons(h2, t2)) if startsWith(l, sub) => true
-			case (Cons(h1, t1), Cons(h2, t2)) => hasSubsequence1(t1, sub)
+			case (::(h1, t1), ::(h2, t2)) if startsWith(l, sub) => true
+			case (::(h1, t1), ::(h2, t2)) => hasSubsequence1(t1, sub)
 			case _ => false
 		}
 
 		// elogant way
 		l match {
 			case Nil => false
-			case Cons(h, t) if startsWith(l, sub) => true
-			case Cons(h, t) => hasSubsequence1(t, sub)
+			case ::(h, t) if startsWith(l, sub) => true
+			case ::(h, t) => hasSubsequence1(t, sub)
 		}
 	}
 

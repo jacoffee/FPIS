@@ -1,6 +1,6 @@
 package ch04
 
-import ch03.{ Cons, List, Nil }
+import ch03.{ ::, List, Nil }
 import ch03.List.{ exists, foldLeft, find  }
 
 /*
@@ -65,7 +65,7 @@ sealed trait Either[+E,  +A] { self =>
 		matchedOption.map {
 			_ match {
 				case l @ Left(e) => Left(l.value)
-				case r @ Right(v) => Right(Cons(r.value, Nil))
+				case r @ Right(v) => Right(::(r.value, Nil))
 			}
 		}.getOrElse {
 			Right(
@@ -73,7 +73,7 @@ sealed trait Either[+E,  +A] { self =>
 					(b, a) => {
 						a match {
 							case l @ Left(e) => b
-							case r @ Right(v) => Cons(r.value, b)
+							case r @ Right(v) => ::(r.value, b)
 						}
 					}
 				})
