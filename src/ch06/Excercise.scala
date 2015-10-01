@@ -24,7 +24,7 @@ object Excercise extends App {
   println(" ints " + RNG.ints(4)(init._2)._1)
 
   println(" hide RNG state")
-  println(" positiveInt " + RNG.positiveInt(4)(init._2)._1)
+  println(" positiveMax " + RNG.positiveMax(4)(init._2)._1)
 
   //List(RNG.nonNegativeInt _, RNG.triple _)
   // 类型推断问题

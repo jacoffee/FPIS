@@ -111,10 +111,10 @@ object RNG {
   }
 
 
-  // --------------------------
   // RNG => (A, RNG)  -->  avoid pass RNG as parameter
   type Rand[+A] = RNG => (A, RNG)
 
+  // Type lift, Rand is a wrapper for type A
   def unit[A](a: A): Rand[A] = rng => (a, rng)
 
   def map[A, B](random: Rand[A])(f: A => B): Rand[B] = {
@@ -127,9 +127,9 @@ object RNG {
   /* EXERCISE 5: Use to map generate an Int between 0 and  n , inclusive: */
   // println(" positiveInt " + RNG.positiveInt(4)(init._2)._1)
   // the invocation is awakward
-  def positiveInt(n: Int): Rand[Int] = {
+  def positiveMax(n: Int): Rand[Int] = {
     map(unit(n)) {
-      a => scala.util.Random.nextInt(a)
+      a => scala.util.Random.nextInt(a) + 1
     }
   }
 

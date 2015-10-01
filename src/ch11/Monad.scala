@@ -48,8 +48,11 @@ trait Monad[F[_]] extends Functor[F] {
   def sequence[A](lma: List[F[A]]): F[List[A]] = {
       val empty: F[List[A]] = unit(Nil)
 
-      List.foldLeft(lma, empty)(
-        (accM, elemM) => map2(accM, elemM)((acc, elem) => elem :: acc)
+      List.foldLeft(lma, unit(List[A]()))(
+        // Attention the order of parameters in map2(A, B) || map2(A, B) will decide whether
+       // the placeholder syntax can work out here
+        // (accM, elemM) => map2(accM, elemM)(_ :: _)  not Okay f(a, b) => a :: b, so b must List
+        (accM, elemM) => map2(elemM, accM)(_ :: _)
       )
   }
 

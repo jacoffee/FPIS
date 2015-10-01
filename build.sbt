@@ -25,3 +25,5 @@ resolvers ++= Seq(
 libraryDependencies ++= Seq(
   "org.scalaz" %% "scalaz-core" % "7.1.3"
 )
+
+//initialCommands in console := "import ch06.RNG._"
