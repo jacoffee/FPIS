@@ -9,7 +9,7 @@ package ch06
    general purpose type and using this type we can write general-purpose
    functions for capturing common patterns of handling and propagating state
 */
-case class State[S, +A](run: S => (A, S)) {
+case class State[S, +A](run: S => (A, S)) { self =>
   // type State[S, +A] = S => (A, S)
 
   def unit[A](a: A): State[S, A] =
@@ -35,4 +35,16 @@ case class State[S, +A](run: S => (A, S)) {
 
   def map2[A, B, C](sa: State[S, A], sb: State[S, B])(f: (A, B) => C): State[S, C] =
       for { a <- sa; b <- sb } yield { f(a, b) }
+
+  def get[S]: State[S, S] = State(s => (s, s))
+
+  // with modification, the next state is the one we provide and value is ()
+  def set[S](s: S): State[S, Unit] = State(_ => ((), s))
+
+  // self.map(_ => ())
+  def modify[S](f: S => S): State[S, Unit] =
+    for {
+     s <- get
+     _ <- set(f(s))
+    } yield ()
 }
