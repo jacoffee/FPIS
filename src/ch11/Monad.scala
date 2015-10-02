@@ -129,7 +129,7 @@ case class Id[A](value: A) {
   def flatMap[B](f: A => Id[B]): Id[B] = f(value)
 }
 
-object Monad {
+object MonadTest extends App {
   // Exercise 1
   // Associative law holds for Option
   val optMonad = new Monad[Option] {
@@ -192,10 +192,61 @@ object Monad {
      so we have to write StateMonad for each concrete type S in State[S, A] which would be very tedious, thanks to type lambda()
      we can abstract the case to a new level
   */
-   def abstractStateMonad[S] = new Monad[({ type lambda[A] = State[S, A] })#lambda] {
+  class StateMonad[S] extends Monad[({ type lambda[A] = State[S, A] })#lambda] {
+
+    def unit[A](a: => A): State[S, A] = State(i => (a, i))
+
+    def flatMap[A, B](ma: State[S, A])(f: (A) => State[S, B]): State[S, B] = ma flatMap f
+
+    def getState: State[S, S] = State(s => (s, s))
+
+    def setState(x: S): State[S, Unit] = State(_ => ((), x))
+  }
+
+   def stateMonad[S] = new Monad[({ type lambda[A] = State[S, A] })#lambda] {
     def unit[A](a: => A): State[S, A] = State(i => (a, i))
     def flatMap[A, B](ma: State[S, A])(f: (A) => State[S, B]): State[S, B] = ma flatMap f
   }
 
    // Then S can be replaced with any valid conrete type: Int, String, ......
+
+  import scala.collection.immutable.{ List, ::, Nil }
+  val M = new StateMonad[Int]
+  def zipWithIndex[A](as: List[A]): List[(Int,A)] = {
+    // State[S, List[(Int, A)]] A --> List[(Int, A)]
+    val ccc = as.map(a => State.unit[Int, A](a))
+
+    as.foldLeft(M.unit(List[(Int, A)]()))(
+      (acc, a) => {
+        //  the implementation of flatMap is making sure that the current state is available to getState
+        // A => State[S, B]
+        acc.flatMap { xs =>
+
+          M.getState.flatMap { n =>
+
+              // State[S, Unit] --> State[Int, List[(Int, A)]] setState change the S in State[S, B] that acts as the returned value
+              //  in flatMap f: A => State[S, B]
+             M.setState(n + 1).map { any =>
+               (n, a) :: xs
+             }
+
+          }
+
+        }
+
+        for {
+          xs <- acc
+          n <- M.getState
+          _ <- M.setState(n + 1)
+        } yield (n, a) :: xs
+
+      }
+
+    ).run(0)._1.reverse
+  }
+
+  val strList = "a" :: "b" :: "c" :: Nil
+  val zip = zipWithIndex(strList)
+  println(" zip " + zip)
+
 }
