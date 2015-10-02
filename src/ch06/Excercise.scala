@@ -55,4 +55,5 @@ object Excercise extends App {
 
   val (co, ca) = CandyDispenser.simulateMachine(Coin :: Turn :: Nil).run(machine)
   println(" CandyDispenser coins " + co +", candies " + ca)
+
 }

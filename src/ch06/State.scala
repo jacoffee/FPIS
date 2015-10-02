@@ -67,4 +67,34 @@ case class State[S, +A](run: S => (A, S)) { self =>
 
   def map2[B, C](sb: State[S, B])(f: (A, B) => C): State[S, C] =
     for { a <- self; b <- sb } yield { f(a, b) }
+
+  // Problems to solve: http://stackoverflow.com/questions/32410919/how-to-compose-two-different-state-monad
+  type AppendBang[A] = State[Int, A]
+
+  // Int => State[String, Int]
+  type AddOne[A] = State[String, A]
+  def addOne(n: Int): AddOne[Int] = State(s => (n + 1, s + "."))
+
+  // String => State[Int, String]
+  def appendBang(str: String): AppendBang[String] = State(s => (str + " !!!", s + 1))
+
+  def myAction(n: Int)(initialAddOneState: String, initialAppendBangState: Int): ((String, Int), String) = {
+    // A => State[S, A]
+    val (addOneNum, newAddOneStr) = addOne(n).run(initialAddOneState)
+
+    // B => State[S2, B]
+    val (appendBangStr, newAppendBingState) = appendBang(newAddOneStr).run(initialAppendBangState)
+    ((newAddOneStr, newAppendBingState), appendBangStr)
+  }
+
+
+  // Given  State[S, A], State[S2, B] ---> State[(S, S2), B] // first parameter S + S2 => (S, S2), second parameter A => B
+  def compose[B, S2](func: B => State[S2, B])(convert: A => B): State[(S, S2), B] =
+    State(
+      ((s: S, s2: S2) => {
+          val (a, s3) = run(s)
+          val (b, s4) =  func(convert(a)).run(s2)
+          (b, (s3, s4))
+      }).tupled
+    )
 }
