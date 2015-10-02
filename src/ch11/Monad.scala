@@ -248,5 +248,24 @@ object MonadTest extends App {
   val strList = "a" :: "b" :: "c" :: Nil
   val zip = zipWithIndex(strList)
   println(" zip " + zip)
+}
 
+case class Reader[R, A](run: R => A) {
+  def flatMap[B](f: A => Reader[R, B]): Reader[R, B] = {
+    Reader(
+      // the initial r gets passed along the outer reader, resultant read from f
+    // notice the diffrence between this and State is that the State Monad's S can be changed along the way but not this one
+      (r: R) => f(run(r)).run(r)
+    )
+  }
+
+}
+
+object Reader {
+  def monad[R] = new Monad[ ({type lambda[X] = Reader[R, X]})#lambda ] {
+
+    def unit[A](a: => A): Reader[R, A] = Reader(_ => a)
+
+    def flatMap[A, B](ma: Reader[R, A])(f: A => Reader[R, B]): Reader[R, B] = ma flatMap f
+  }
 }
