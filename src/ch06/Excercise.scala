@@ -39,4 +39,20 @@ object Excercise extends App {
 
   println(" map2 " + RNG.map2(RNG.triple, RNG.quadruple)(_ + _)(init._2)._1)
   println(" map2ViaFlatMap " + RNG.map2ViaFlatMap(RNG.triple, RNG.quadruple)(_ + _)(init._2)._1)
+
+  ////// State Test
+  println(" after two coins ")
+  val machine = Machine(true, 10, 2)
+
+  val changedState = machine.simulateMachine(Coin :: Turn :: Nil)
+  val changedStateViaFold = machine.simulateMachineViaFold(Coin :: Turn :: Nil)
+
+  val (coins, machine1) = changedState.run(machine)
+  val (coinsViaFold, machine2) = changedStateViaFold.run(machine)
+
+  println(" coins " + coins + " , canides " + machine1.candies)
+  println(" coinsViaFold " + coinsViaFold + ", candies " + machine2.candies)
+
+  val (co, ca) = CandyDispenser.simulateMachine(Coin :: Turn :: Nil).run(machine)
+  println(" CandyDispenser coins " + co +", candies " + ca)
 }
