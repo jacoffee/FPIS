@@ -56,6 +56,21 @@ trait Monad[F[_]] extends Functor[F] {
       )
   }
 
+  // similiar definition in Scalaz Applicative => further abstraction thus more applicable
+
+  /* however since we directly use map here(cause we assume the type is List), in Scalaz applicative
+   this part has to be tweak to fit varibale types another data struture or abstraction seems inevitable
+   Actually, it is the case in the Traverse.scala of Scalaz
+
+      trait Traverse[F[_]] extends Functor[F] with Foldable[F] { self =>
+        def traverse[A, G[_], B](value: G[A])(f: A => F[B])(implicit G: Traverse[G]): F[G[B]] =
+      }
+
+      Tranverse is Functor, also is good candidate for Type class, defining a set of methods whose implementation may vary on the type passing in
+      if F is List, then listInstance is available for your use
+      if F is Option, then  optionInstance is available for your use
+  */
+
   def tranverse[A, B](la: List[A])(f: A => F[B]): F[List[B]] = sequence(List.map(la)(f))
 
   def replicateM[A](n: Int, ma: F[A]): F[List[A]] = {
