@@ -263,6 +263,21 @@ object MonadTest extends App {
   val strList = "a" :: "b" :: "c" :: Nil
   val zip = zipWithIndex(strList)
   println(" zip " + zip)
+
+
+  // EitherMonad to return multiple error to users
+  class EitherMonad[L] extends Monad[({ type lambda[R] = Either[L, R]})#lambda] {
+
+    def unit[A](a: => A): Either[L, A] = Right(a)
+
+    def flatMap[A, B](ma: Either[L, A])(f: (A) => Either[L, B]): Either[L, B] =
+       ma match {
+         case Right(r) => f(r)
+         case Left(l) => Left(l)
+       }
+  }
+
+
 }
 
 case class Reader[R, A](run: R => A) {
