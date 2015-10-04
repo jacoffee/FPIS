@@ -42,6 +42,8 @@ object State {
       s <- get
       _ <- set(f(s))
     } yield ()
+
+  // def apply[S, A](run: S => (A, S)): State[S, A] = new State(run)
 }
 
 case class State[S, +A](run: S => (A, S)) { self =>
