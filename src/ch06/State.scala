@@ -15,25 +15,27 @@ package ch06
 */
 object State {
 
-  def unit[S, A](a: A): State[S, A] =
+  def point[S, A](a: A): State[S, A] =
     State((s: S) => (a, s))
 
   def map2[S, A, B, C](sa: State[S, A], sb: State[S, B])(f: (A, B) => C): State[S, C] =
     for { a <- sa; b <- sb } yield { f(a, b) }
 
   def sequence[S, A](sas: List[State[S, A]]): State[S, List[A]] = {
-    val identity: State[S, List[A]] = unit(Nil)
-    sas.foldLeft(unit[S, List[A]](List()))({
+    val identity: State[S, List[A]] = point(Nil)
+    sas.foldLeft(point[S, List[A]](List()))({
       (acc, elem) => elem.map2(acc)(_ :: _)
     })
 
     // CandyDispenser coins (3,9), candies Machine(true,9,3)
-    sas.foldRight(unit[S, List[A]](List()))((f, acc) => f.map2(acc)(_ :: _))
+    sas.foldRight(point[S, List[A]](List()))((f, acc) => f.map2(acc)(_ :: _))
   }
 
+  // I just want bind the resultant State S into the returning A
   def get[S]: State[S, S] = State(s => (s, s))
 
   // with modification, the next state is the one we provide and value is ()
+  // ignore the input S, set the returning S as the parameter S
   def set[S](s: S): State[S, Unit] = State(_ => ((), s))
 
   // self.map(_ => ())

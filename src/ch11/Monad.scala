@@ -92,7 +92,6 @@ trait Monad[F[_]] extends Functor[F] {
   // compose(f, g), h == compose(f, compose(g, h))
   def _flatMap[A, B](ma: F[A])(f: A => F[B]): F[B] = {
     // type A = Unit => F[A]
-    // type B = A => F[B]
 
     compose(
       (_: Unit) => ma, f
@@ -229,8 +228,6 @@ object MonadTest extends App {
   val M = new StateMonad[Int]
   def zipWithIndex[A](as: List[A]): List[(Int,A)] = {
     // State[S, List[(Int, A)]] A --> List[(Int, A)]
-    val ccc = as.map(a => State.unit[Int, A](a))
-
     as.foldLeft(M.unit(List[(Int, A)]()))(
       (acc, a) => {
         //  the implementation of flatMap is making sure that the current state is available to getState

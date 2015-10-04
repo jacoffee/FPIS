@@ -28,6 +28,20 @@ object ServiceTest3 {
 
     // (ServiceTest3.Cache, ServiceTest3.FollowerStats)
     def followerStats(u: String): State[Cache, FollowerStats] = {
+
+      checkCache(u) flatMap { fsOpt =>
+        fsOpt.map(State.point[Cache, FollowerStats]).getOrElse(retrieve(u))
+
+        /*
+        fsOpt match {
+          // case Some(fs) => State(s => (fs, s)) // weird part, ignoring the inital State
+          case Some(fs) => State.point(fs)
+          case None => retrieve(u)
+        }
+        */
+      }
+
+      // the following code actually run the state, which could be avoided
       State(
         (c: Cache) => {
           val (fsOpt, c1) = checkCache(u).run(c)
@@ -40,17 +54,38 @@ object ServiceTest3 {
     }
 
     private def checkCache(u: String): State[Cache, Option[FollowerStats]] = {
-        State(
-          (c: Cache) => {
-            c.get(u) match {
-              case Some(Timestamped(fs, ts))
-                if !stale(ts) =>
-                (Some(fs), c.copy(hits = c.hits + 1))
-              case other =>
-                (None, c.copy(misses = c.misses + 1))
-            }
+
+      // initial version
+      State(
+        (c: Cache) => { // obtain Cache
+          c.get(u) match {
+            case Some(Timestamped(fs, ts))
+              if !stale(ts) =>
+              (Some(fs), c.copy(hits = c.hits + 1)) // update Cache
+            case other =>
+              (None, c.copy(misses = c.misses + 1))
+          }
+        }
+      )
+
+      // updated version
+      for {
+        cache <- State.get[Cache]
+        optFS <- State.point(
+          cache.get(u).collect {
+            // if not stale, Option[Timestamped]
+            case Timestamped(fs, ts) if stale(ts) => fs
           }
         )
+        // if optFs is Some, hit +1, else misses +1 update cache States
+        _ <- State.set(
+          optFS.fold(cache.copy(misses = cache.misses + 1))(
+            _ => cache.copy(hits = cache.hits + 1)
+          )
+        )
+      } yield(optFS)
+
+
     }
 
     private def stale(ts: Long): Boolean = {
