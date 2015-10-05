@@ -51,6 +51,7 @@ object TypeClassIntegerationExample extends App {
       followerStats("u1")
     )
 
+
   val stateOfList = State.sequence[Cache, FollowerStats](listStateCache)
   val (followers, stateCache) = stateOfList.run(Cache.empty)
   println(" hits & misses " + stateCache.hits + " ::: " + stateCache.misses)

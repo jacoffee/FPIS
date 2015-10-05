@@ -47,16 +47,27 @@ object State {
       s <- get
       _ <- set(f(s))
     } yield ()
-
-  // def apply[S, A](run: S => (A, S)): State[S, A] = new State(run)
 }
 
-case class State[S, +A](run: S => (A, S)) { self =>
+case class State[S, A](run: S => (A, S)) { self =>
   type MyState[+A] = State[S, A]
-
 
   def ap[B](sab: MyState[A => B]): State[S, B] = {
     State.map2(self, sab)((a, fa) => fa(a))
+  }
+
+  // def apply[S, A](run: S => (A, S)): State[S, A] = new State(run)
+  // State[S, ?] => State[T, ?] ----> State transformation
+  def lift[T](
+     ta: State[T, A], get: S => T, set: (S, T) => S // Lens In Scalaz
+   ): State[S, A] = {
+     State((inputS: S) => {
+       val inputT = get(inputS)
+       val (a, outputT) = ta.run(inputT)
+       // InputS => OutputS
+       val outputS = set(inputS, outputT)
+       (a, outputS)
+     })
   }
 
   def map[B](f: A => B): State[S, B] = {
