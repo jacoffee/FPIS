@@ -1,4 +1,4 @@
-name := "fpis"
+name := "FPIS"
 
 organization := "jacoffee"
 
@@ -26,4 +26,4 @@ libraryDependencies ++= Seq(
   "org.scalaz" %% "scalaz-core" % "7.1.3"
 )
 
-//initialCommands in console := "import ch06.RNG._"
+initialCommands in console := "import scalaz._; import Scalaz._"

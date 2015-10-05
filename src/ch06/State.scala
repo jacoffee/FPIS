@@ -15,6 +15,9 @@ package ch06
 */
 object State {
 
+  // the State is always passed when invoking the func
+  def constantState[S, A](a: A, s: => S) = State((_: S) => (a, s))
+
   def point[S, A](a: A): State[S, A] =
     State((s: S) => (a, s))
 
@@ -49,7 +52,12 @@ object State {
 }
 
 case class State[S, +A](run: S => (A, S)) { self =>
-  // type State[S, +A] = S => (A, S)
+  type MyState[+A] = State[S, A]
+
+
+  def ap[B](sab: MyState[A => B]): State[S, B] = {
+    State.map2(self, sab)((a, fa) => fa(a))
+  }
 
   def map[B](f: A => B): State[S, B] = {
     State(
