@@ -68,6 +68,9 @@ object ServiceTest3 {
         }
       )
 
+      // avoid explicitly constructing State with State(.....); State action is better employed with State transformation, jusr
+      // like what we do in the for-comprehension
+
       // updated version
       for {
         cache <- State.get[Cache]
@@ -93,13 +96,22 @@ object ServiceTest3 {
     }
 
     private def retrieve(u: String): State[Cache, FollowerStats]  = {
+
       State(
-        (c: Cache) => {
+        (c: Cache) => { // get Cache
           val fs = callWebService(u)
           val tfs = Timestamped(fs, System.currentTimeMillis)
+          // update Cache
           (fs, c.update(u, tfs))
         }
       )
+
+      // imperative style
+      for {
+        fs <- State.point[Cache, FollowerStats](callWebService(u))
+        tfs = Timestamped(fs, System.currentTimeMillis)
+        _ <- State.modify((c: Cache) => c.update(u, tfs))
+      } yield (fs)
     }
 
     private def callWebService(u: String): FollowerStats =
