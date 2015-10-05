@@ -24,7 +24,7 @@ object State {
   def map2[S, A, B, C](sa: State[S, A], sb: State[S, B])(f: (A, B) => C): State[S, C] =
     for { a <- sa; b <- sb } yield { f(a, b) }
 
-  def sequence[S, A](sas: List[State[S, A]]): State[S, List[A]] = {
+  def  sequence[S, A](sas: List[State[S, A]]): State[S, List[A]] = {
     val identity: State[S, List[A]] = point(Nil)
     sas.foldLeft(point[S, List[A]](List()))({
       (acc, elem) => elem.map2(acc)(_ :: _)

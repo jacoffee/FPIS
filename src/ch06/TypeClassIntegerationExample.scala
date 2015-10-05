@@ -3,7 +3,7 @@ package ch06
 import scalaz._
 import scalaz.std._
 import Scalaz._
-import ch06.ServiceTest3.Cache
+import ch06.ServiceTest3.{FollowerStats, Cache}
 
 /**
  * Created by allen on 10/5/15.
@@ -41,4 +41,18 @@ object TypeClassIntegerationExample extends App {
   val r1: StateCache[Int] = 10.point[StateCache] //
   val r2 = State.point[Cache, Int](10)
 
+
+  import ServiceTest3._
+  import FakeSocialService._
+  val listStateCache: List[StateCache[FollowerStats]] =
+    List(
+      followerStats("u1"),
+      followerStats("u2"),
+      followerStats("u1")
+    )
+
+  val stateOfList = State.sequence[Cache, FollowerStats](listStateCache)
+  val (followers, stateCache) = stateOfList.run(Cache.empty)
+  println(" hits & misses " + stateCache.hits + " ::: " + stateCache.misses)
 }
+
