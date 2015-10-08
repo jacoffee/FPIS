@@ -79,9 +79,17 @@ object ValidationTest extends App {
           case (failure @ Failure(h1, t1), _) => failure
         }
       }
+
+      override def map2[A, B, C](va: Validation[E, A], vb: Validation[E, B])(f: (A, B) => C): Validation[E, C] = {
+        (va, vb) match {
+          case (Success(a), Success(b)) => Success(f(a, b))
+          case (_, failure @ Failure(_, _)) => failure
+          case (Failure(h1, t1), Failure(h2, t2)) => Failure(h1, h2 :: t1 ::: t2)
+          case (failure @ Failure(h1, t1), _) => failure
+        }
+      }
     }
   }
-
 
   def validName(name: String): Validation[String, String] =
     if (name != "") Success(name)
@@ -100,6 +108,17 @@ object ValidationTest extends App {
       Success(phoneNumber)
     else Failure("Phone number must be 10 digits", List())
 
+  def validate(name: String, birthdate: String, phone: String): Validation[String, WebForm] = {
 
+    // Name => Birthdate => Phone => WebForm  A => B ---> B could be anything, if it's a func, the whole store gets interesting
+    val va = validationApplicative[String]
+    val webFormFunc = (a: String, b: Date, c: String) => WebForm(a, b, c)
+    val ccc = va.apply(va.unit(webFormFunc.curried))(validName(name))
+    va.apply(
+      va.apply(
+        va.apply(va.unit(webFormFunc.curried))(validName(name))
+      )(validBirthdate(birthdate))
+    )(validPhone(phone))
+  }
 }
 
