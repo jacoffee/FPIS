@@ -63,27 +63,13 @@ case class WebForm(name: String, birthdate: Date, phoneNumber: String)
 
 object ValidationTest extends App {
 
-
-
   def validationApplicative[E]: Applicative[({type f[A] = Validation[E,A]})#f] = {
-
     new Applicative[({type f[A] = Validation[E,A]})#f] {
-
       def unit[A](a: => A) = Success(a)
-
       def apply[A, B](vfab: Validation[E, (A) => B])(va: Validation[E, A]): Validation[E, B] = {
         (va, vfab) match {
           case (Success(a), Success(fab)) => Success(fab(a))
-          case (_, failure @ Failure(_, _)) => failure
-          case (Failure(h1, t1), Failure(h2, t2)) => Failure(h1, h2 :: t1 ::: t2)
-          case (failure @ Failure(h1, t1), _) => failure
-        }
-      }
-
-      override def map2[A, B, C](va: Validation[E, A], vb: Validation[E, B])(f: (A, B) => C): Validation[E, C] = {
-        (va, vb) match {
-          case (Success(a), Success(b)) => Success(f(a, b))
-          case (_, failure @ Failure(_, _)) => failure
+          case (Success(_), failure @ Failure(_, _)) => failure
           case (Failure(h1, t1), Failure(h2, t2)) => Failure(h1, h2 :: t1 ::: t2)
           case (failure @ Failure(h1, t1), _) => failure
         }
@@ -92,13 +78,15 @@ object ValidationTest extends App {
   }
 
   def validName(name: String): Validation[String, String] =
-    if (name != "") Success(name)
+    if (name.trim.nonEmpty) Success(name)
     else Failure("Name cannot be empty", List())
 
   def validBirthdate(birthdate: String): Validation[String, Date] =
     try {
       import java.text._
-      Success((new SimpleDateFormat("yyyy-MM-dd")).parse(birthdate))
+      val simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd")
+      simpleDateFormat.setLenient(false)
+      Success(simpleDateFormat.parse(birthdate))
     } catch {
       case e: Exception => Failure("Birthdate must be in the form yyyy-MM-dd", List())
     }
@@ -109,16 +97,37 @@ object ValidationTest extends App {
     else Failure("Phone number must be 10 digits", List())
 
   def validate(name: String, birthdate: String, phone: String): Validation[String, WebForm] = {
-
     // Name => Birthdate => Phone => WebForm  A => B ---> B could be anything, if it's a func, the whole store gets interesting
+
+    /*
+      closure actually plays an important role, the context when it defines rather than the context when it is invoked
+
+      scala> val sum3 : (Int, Int, Int) => Int = (_ + _ + _)
+      sum3: (Int, Int, Int) => Int = <function3>
+
+      scala> sum3.curried(1)
+      res6: Int => (Int => Int) = <function1>
+
+      scala> sum3.curried(1)(2)
+      res7: Int => Int = <function1>
+
+      scala> sum3.curried(1)(2)(3)
+      res8: Int = 6
+    */
+
     val va = validationApplicative[String]
     val webFormFunc = (a: String, b: Date, c: String) => WebForm(a, b, c)
-    val ccc = va.apply(va.unit(webFormFunc.curried))(validName(name))
     va.apply(
       va.apply(
         va.apply(va.unit(webFormFunc.curried))(validName(name))
       )(validBirthdate(birthdate))
     )(validPhone(phone))
+  }
+
+  println(" validate test")
+  validate("", "2015-10-09333", "14567879878") match {
+    case Success(w) => println("  WebForm Value " + w)
+    case Failure(h, t) => println(" WebForm Failure " + (h :: t))
   }
 }
 
