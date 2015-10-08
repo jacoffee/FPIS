@@ -50,7 +50,7 @@ object State {
 }
 
 case class State[S, A](run: S => (A, S)) { self =>
-  type MyState[+A] = State[S, A]
+  type MyState[A] = State[S, A]
 
   def ap[B](sab: MyState[A => B]): State[S, B] = {
     State.map2(self, sab)((a, fa) => fa(a))

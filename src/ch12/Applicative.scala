@@ -29,6 +29,9 @@ trait Applicative[F[_]] extends Functor[F] {
   }
 
   def map3[A,B,C,D](fa: F[A], fb: F[B], fc: F[C])(f: (A, B, C) => D): F[D] = {
+    // f.curried A => B => C => D --> F[A => B => C => D]
+    // (F[A => B => C => D])(F[A]) ---> F[B => C => D]
+
     apply( apply( apply(unit(f.curried))(fa) )(fb) ) (fc)
   }
 
@@ -42,7 +45,6 @@ trait Applicative[F[_]] extends Functor[F] {
       (accM, elemM) => map2(elemM, accM)(_ :: _)
     )
   }
-
 
   def traverse[A, B](as: List[A])(f: A => F[B]): F[List[B]] = sequence(as.map(f))
 
@@ -60,6 +62,27 @@ case class Success[A](a: A) extends Validation[Nothing, A]
 case class WebForm(name: String, birthdate: Date, phoneNumber: String)
 
 object ValidationTest extends App {
+
+
+
+  def validationApplicative[E]: Applicative[({type f[A] = Validation[E,A]})#f] = {
+
+    new Applicative[({type f[A] = Validation[E,A]})#f] {
+
+      def unit[A](a: => A) = Success(a)
+
+      def apply[A, B](vfab: Validation[E, (A) => B])(va: Validation[E, A]): Validation[E, B] = {
+        (va, vfab) match {
+          case (Success(a), Success(fab)) => Success(fab(a))
+          case (_, failure @ Failure(_, _)) => failure
+          case (Failure(h1, t1), Failure(h2, t2)) => Failure(h1, h2 :: t1 ::: t2)
+          case (failure @ Failure(h1, t1), _) => failure
+        }
+      }
+    }
+  }
+
+
   def validName(name: String): Validation[String, String] =
     if (name != "") Success(name)
     else Failure("Name cannot be empty", List())
@@ -76,5 +99,7 @@ object ValidationTest extends App {
     if (phoneNumber.matches("[0-9]{10}"))
       Success(phoneNumber)
     else Failure("Phone number must be 10 digits", List())
+
+
 }
 

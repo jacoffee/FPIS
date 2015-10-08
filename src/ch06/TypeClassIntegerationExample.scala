@@ -11,7 +11,7 @@ import ch06.ServiceTest3.{FollowerStats, Cache}
 object TypeClassIntegerationExample extends App {
 
 
-  type StateCache[+A] = State[Cache, A]
+  type StateCache[A] = State[Cache, A]
 
   import scalaz.syntax.id._
   // import scalaz.syntax.applicative._
