@@ -13,9 +13,40 @@ map unit join
 
       A monad is just an applicative functor with an additional combinator, join.
 */
-trait Applicative[F[_]] extends Functor[F] {
+object Applicative {
 
-   // map0
+  def product[F[_], G[_]](fApp: Applicative[F], gApp: Applicative[G]): Applicative[({type f[x] = (F[x], G[x])})#f] = {
+    type lambda[X] = (F[X], G[X])
+    new Applicative[lambda] {
+      def unit[A](a: => A): lambda[A] = (fApp.unit(a), gApp.unit(a))
+      def apply[A, B](fgab: lambda[A => B])(fab: lambda[A]): lambda[B] = {
+        val (f2ab, g2ab) = fgab
+        val (fa, fb) = fab
+        (fApp.apply(f2ab)(fa), gApp.apply(g2ab)(fb))
+      }
+    }
+  }
+
+  // F[_] G[_] are applicative functors, then F[G[_]]
+//  def compose[F[_], G[_]](fApp: Applicative[F], gApp: Applicative[G]): Applicative[({type f[x] = F[G[x]]})#f] = {
+//    type lambda[X] = F[G[X]]
+//
+//    new Applicative[({type f[x] = F[G[x]]})#f] {
+//      override def unit[A](a: => A): F[G[A]] = fApp.unit(gApp.unit(a))
+//
+//      // F[ G[A => B] ] F[ G[A] ]
+//      override def apply[A, B](lab: F[ G[A => B] ])(la: F[ G[A] ]): F[G[B]] = {
+//        map2[G[A => B], G[A], G[B]](lab, la)({
+//          (gab, ga) => super.apply(gab)(ga)
+//        })
+//      }
+//    }
+//  }
+
+}
+
+trait Applicative[F[_]] extends Functor[F] { self =>
+
   def unit[A](a: => A): F[A]
 
    // kind of a new concept in Applicative Functor
@@ -50,6 +81,34 @@ trait Applicative[F[_]] extends Functor[F] {
 
   def factor[A,B](fa: F[A], fb: F[B]): F[(A,B)] = map2(fa, fb)((_, _))
 
+  // applicative law ==> identity law
+  def identityLaw[A](fa: F[A]) = {
+    map(fa)(x => x) == fa
+    unit((x:A) => x)
+
+    // law of identity
+    apply[A, A]( unit((x:A) => x) )(fa) == fa
+    /**
+      The second thing that the laws demand of applicative functors is that
+          they preserve function composition. This is stated as the composition law:
+
+      this is coming from the comparison between flatMap vs apply
+      flatMap sometimes will stop the func chain from going further but apply will not
+    */
+  }
+
+  // applicative law ==> composition law
+  // f&g --> x === g(f(x))
+  def compositionLaw[A, B, C](f: F[A => B], g: F[B => C], fa: F[A]) = {
+    // A => B, B => C --> A => C, fa
+    val fac: F[A => C] = map2(f, g)((ab, bc) => (ab andThen bc))
+    apply(fac)(fa): F[C]
+    // g x --> f (g x)
+    apply(g)(apply(f)(fa)): F[C]
+
+    // A => B B => C A
+    map3(g, f, fa)((x1, x2, x3) => x1(x2(x3))): F[C]
+  }
 }
 
 
@@ -128,6 +187,11 @@ object ValidationTest extends App {
   validate("", "2015-10-09333", "14567879878") match {
     case Success(w) => println("  WebForm Value " + w)
     case Failure(h, t) => println(" WebForm Failure " + (h :: t))
+  }
+
+  // Applicative Law
+  def testApplicativeLaw[E] = {
+
   }
 }
 
