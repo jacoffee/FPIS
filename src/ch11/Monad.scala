@@ -8,11 +8,19 @@ import ch06.State
     lift a function to take two parameters
     => map2 In Option
     def map2[A,B,C](oa: Option[A], ob: Option[B])(f: (A, B) => C): Option[C] =
-      oa flatMap { a => ob map { b => f(a, b) } }
+      oa flatMap { a =>
+        ob map { b =>
+          f(a, b)
+        }
+      }
 
     => map2 In Parser ...
     def map2[A,B,C](pa: Parser[A], pb: Parser[B])(f: (A,B) => C): Parser[C] =
-      pa flatMap (a => pb map (b => f(a,b)))
+      pa flatMap { a =>
+        pb map { b =>
+          f(a,b)
+        }
+      }
 
     Actually Option[A], Parser[A] push us to generalize the map2 further
 
@@ -134,6 +142,7 @@ trait Monad[F[_]] extends Functor[F] {
     )
   }
 }
+
 /*
    monadic data types are those who implement the basic method method in monad
 */
